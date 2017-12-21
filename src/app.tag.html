@@ -12,7 +12,24 @@
 					<div class="panel-body">
 						<div class="row">
 							<div class="col-xs-12">
-								<div id="current-account-grid" style="height: 450px"></div>
+								<form class="form-inline">
+
+									<div class="form-group">
+										<input name="mark-as-group" type="radio" id="radio-income" checked="checked">
+										<label for="radio-income" class="income">Income</label>
+									</div>
+
+									<div class="form-group">
+										<input name="mark-as-group" type="radio" id="radio-expense">
+										<label for="radio-expense" class="expense">Expense</label>
+									</div>
+
+								</form>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-12">
+								<div id="current-account-grid" style="height: 450px;"></div>
 							</div>
 						</div>
 						<div style="margin-top: 15px;">
@@ -21,7 +38,8 @@
 								<li>Has a filter row to search for transactions</li>
 								<li>Click to toggle income (or expense) on/off</li>
 								<li>Optionally - pre-apply a set of known good income/expense rules - highlight in different color so staff know to check
-									them</li>
+									them
+								</li>
 							</ul>
 						</div>
 						<div class="row">
@@ -36,10 +54,75 @@
 	</div>
 
 	<style>
+		/* grid select color */
+
 		.w2ui-grid .w2ui-grid-body .w2ui-grid-records table tr.w2ui-selected,
 		.w2ui-grid .w2ui-grid-body .w2ui-grid-records table tr td.w2ui-selected {
 			color: #000000 !important;
 			background-color: #1f80dd !important;
+		}
+
+		/* Radio buttons : https://mdbootstrap.com/components/bootstrap-radio-button/ */
+
+		input {
+			visibility: hidden;
+		}
+
+		[type=radio]+label {
+			-webkit-transition: .28s ease;
+			transition: .28s ease;
+		}
+
+		[type=radio]+label,
+		[type=checkbox]+label {
+			position: relative;
+			padding-left: 35px;
+			cursor: pointer;
+			display: inline-block;
+			height: 25px;
+			line-height: 25px;
+			font-size: 1.5rem;
+			-webkit-user-select: none;
+			-moz-user-select: none;
+			-khtml-user-select: none;
+			-ms-user-select: none;
+		}
+
+		[type=radio]:checked+label:before {
+			border-color: transparent;
+		}
+
+		[type=radio]+label:after,
+		[type=radio]+label:before {
+			content: '';
+			position: absolute;
+			left: 0;
+			top: 0;
+			margin: 4px;
+			width: 16px;
+			height: 16px;
+			z-index: 0;
+			border-radius: 50%;
+			border-style: solid;
+			border-width: 2px;
+			-webkit-transition: .28s ease;
+			transition: .28s ease;
+		}
+
+		[type=radio]:checked+label:after {
+			z-index: 0;
+			-webkit-transform: scale(1.02);
+			-ms-transform: scale(1.02);
+			transform: scale(1.02);
+		}
+
+		[type=radio]:checked+label.income:after {
+			border-color: #4285F4;
+			background-color: #4285F4;
+		}
+		[type=radio]:checked+label.expense:after {
+			border-color: #f44286;
+			background-color: #f44286;
 		}
 	</style>
 
@@ -169,9 +252,9 @@
 				name: 'current-account-grid',
 				multiSelect: false,
 				columns: [
-					{ field: 'date', caption: 'Date', size: '20%' },
-					{ field: 'description', caption: 'Description', size: '30%' },
-					{ field: 'amount', caption: 'Amount', size: '20%' },
+					{ field: 'date', caption: 'Date', size: '12%' },
+					{ field: 'description', caption: 'Description', size: '56%' },
+					{ field: 'amount', caption: 'Amount', size: '12%' },
 					{ field: 'balance', caption: 'Balance', size: '20%' },
 				],
 				records: accounts,
@@ -184,8 +267,9 @@
 			});
 
 			// fit height
-			var height = (tag.grid.records.length + 1) * tag.grid.recordHeight + 2;
-			$('#current-account-grid').height(height);
+			//var height = (tag.grid.records.length + 1) * tag.grid.recordHeight + 2;
+			//$('#current-account-grid').height(height);
+			w2ui["current-account-grid"].render(); // hack - column width not calcualted correctly on first render
 		}
 	</script>
 </app>
