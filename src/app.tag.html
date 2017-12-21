@@ -12,19 +12,49 @@
 					<div class="panel-body">
 						<div class="row">
 							<div class="col-xs-12">
-								<form class="form-inline">
-
-									<div class="form-group">
-										<input name="mark-as-group" type="radio" id="radio-income" checked="checked">
-										<label for="radio-income" class="income">Income</label>
-									</div>
-
-									<div class="form-group">
-										<input name="mark-as-group" type="radio" id="radio-expense">
-										<label for="radio-expense" class="expense">Expense</label>
-									</div>
-
-								</form>
+								<fieldset>
+									<legend>Mark as</legend>
+									<form class="form-inline">
+										<div class="form-group">
+											<input name="mark-as-group" type="radio" id="radio-income" checked="checked">
+											<label for="radio-income" class="income">Income</label>
+										</div>
+										<div class="form-group">
+											<input name="mark-as-group" type="radio" id="radio-expense">
+											<label for="radio-expense" class="expense">Expense</label>
+										</div>
+									</form>
+								</fieldset>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-12">
+								<fieldset>
+									<legend>Categorise</legend>
+									<button onclick={ autoCategoriseIncome } class="btn income-btn btn-sm" type="button">Try auto-categorise income</button>
+									<button onclick={ autoCategoriseExpense } class="btn expense-btn btn-sm" type="button">Try auto-categorise expense</button>
+								</fieldset>
+							</div>
+						</div>
+						<div class="row" style="margin-top: 15px;">
+							<div class="col-xs-12">
+								<fieldset>
+									<legend>Filter</legend>
+									<form>
+										<div class="row form-group">
+											<label class="col-xs-1 control-label">Description</label>
+											<input class="col-xs-6" name="description" type="text" class="form-control" oninput={ filter }>
+											<button onclick={ clear } class="btn btn-white btn-sm" type="button" style="margin-left: 5px;">X</button>
+											<button onclick={ categoriseAllIncome } class="btn income-btn btn-sm" type="button">Income</button>
+											<button onclick={ categoriseAllExpense } class="btn expense-btn btn-sm" type="button">Expense</button>
+										</div>
+									</form>
+								</fieldset>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-12">
+								<h3>Transactions</h3>
 							</div>
 						</div>
 						<div class="row">
@@ -35,16 +65,15 @@
 						<div style="margin-top: 15px;">
 							Notes:
 							<ul>
-								<li>Has a filter row to search for transactions</li>
-								<li>Click to toggle income (or expense) on/off</li>
-								<li>Optionally - pre-apply a set of known good income/expense rules - highlight in different color so staff know to check
-									them
+								<li>Click row to toggle income (or expense) on/off</li>
+								<li>Optionally - pre-apply a set of income/expense rules - highlight in different color so staff know to check them
 								</li>
+								<li>Has a filter row to search for transactions</li>
 							</ul>
 						</div>
 						<div class="row">
 							<div class="col-xs-offset-11">
-								<button onclick={ next } class="btn btn-primary btn-sm" type="button" disabled="disabled">Next</button>
+								<button onclick={ next } class="btn btn-primary btn-sm" type="button">Next</button>
 							</div>
 						</div>
 					</div>
@@ -68,13 +97,21 @@
 			background-color: #4285F4 !important;
 		}
 
+		.income-row-auto {
+			background-color: #86b4ff !important;
+		}
+
 		.expense-row {
 			background-color: #f44286 !important;
 		}
 
+		.expense-row-auto {
+			background-color: #f88ab4 !important;
+		}
+
 		/* Radio buttons : https://mdbootstrap.com/components/bootstrap-radio-button/ */
 
-		input {
+		input[type=radio] {
 			visibility: hidden;
 		}
 
@@ -135,6 +172,142 @@
 			border-color: #f44286;
 			background-color: #f44286;
 		}
+
+		/* styled buttons: using https://lesstester.com & bootstraps .button-variant */
+
+		/* income-btn */
+
+		.income-btn {
+			color: #ffffff;
+			background-color: #4285F4;
+			border-color: #4285F4;
+		}
+
+		.income-btn:focus,
+		.income-btn.focus {
+			color: #ffffff;
+			background-color: #1266f1;
+			border-color: #0a47ac;
+		}
+
+		.income-btn:hover {
+			color: #ffffff;
+			background-color: #1266f1;
+			border-color: #0e61eb;
+		}
+
+		.income-btn:active,
+		.income-btn.active,
+		.open>.dropdown-toggle.income-btn {
+			color: #ffffff;
+			background-color: #1266f1;
+			border-color: #0e61eb;
+		}
+
+		.income-btn:active:hover,
+		.income-btn.active:hover,
+		.open>.dropdown-toggle.income-btn:hover,
+		.income-btn:active:focus,
+		.income-btn.active:focus,
+		.open>.dropdown-toggle.income-btn:focus,
+		.income-btn:active.focus,
+		.income-btn.active.focus,
+		.open>.dropdown-toggle.income-btn.focus {
+			color: #ffffff;
+			background-color: #0c57d3;
+			border-color: #0a47ac;
+		}
+
+		.income-btn:active,
+		.income-btn.active,
+		.open>.dropdown-toggle.income-btn {
+			background-image: none;
+		}
+
+		.income-btn.disabled:hover,
+		.income-btn[disabled]:hover,
+		fieldset[disabled] .income-btn:hover,
+		.income-btn.disabled:focus,
+		.income-btn[disabled]:focus,
+		fieldset[disabled] .income-btn:focus,
+		.income-btn.disabled.focus,
+		.income-btn[disabled].focus,
+		fieldset[disabled] .income-btn.focus {
+			background-color: #4285F4;
+			border-color: #4285F4;
+		}
+
+		.income-btn .badge {
+			color: #4285F4;
+			background-color: #ffffff;
+		}
+
+		/* expense-btn */
+
+		.expense-btn {
+			color: #ffffff;
+			background-color: #f44286;
+			border-color: #f44286;
+		}
+
+		.expense-btn:focus,
+		.expense-btn.focus {
+			color: #ffffff;
+			background-color: #f11267;
+			border-color: #ac0a48;
+		}
+
+		.expense-btn:hover {
+			color: #ffffff;
+			background-color: #f11267;
+			border-color: #eb0e62;
+		}
+
+		.expense-btn:active,
+		.expense-btn.active,
+		.open>.dropdown-toggle.expense-btn {
+			color: #ffffff;
+			background-color: #f11267;
+			border-color: #eb0e62;
+		}
+
+		.expense-btn:active:hover,
+		.expense-btn.active:hover,
+		.open>.dropdown-toggle.expense-btn:hover,
+		.expense-btn:active:focus,
+		.expense-btn.active:focus,
+		.open>.dropdown-toggle.expense-btn:focus,
+		.expense-btn:active.focus,
+		.expense-btn.active.focus,
+		.open>.dropdown-toggle.expense-btn.focus {
+			color: #ffffff;
+			background-color: #d30c58;
+			border-color: #ac0a48;
+		}
+
+		.expense-btn:active,
+		.expense-btn.active,
+		.open>.dropdown-toggle.expense-btn {
+			background-image: none;
+		}
+
+		.expense-btn.disabled:hover,
+		.expense-btn[disabled]:hover,
+		fieldset[disabled] .expense-btn:hover,
+		.expense-btn.disabled:focus,
+		.expense-btn[disabled]:focus,
+		fieldset[disabled] .expense-btn:focus,
+		.expense-btn.disabled.focus,
+		.expense-btn[disabled].focus,
+		fieldset[disabled] .expense-btn.focus {
+			background-color: #f44286;
+			border-color: #f44286;
+		}
+
+		.expense-btn .badge {
+			color: #f44286;
+			background-color: #ffffff;
+		}
 	</style>
 
 	<script>
@@ -145,6 +318,8 @@
 		})
 
 		let tag = this;
+
+		let originalRecords = undefined;
 
 		let hardcoded = [
 			{ "date": "2017/09/01", "description": "INETBNK PAY DEBIT ABSA BANK Graham Kingma ", "amount": -820, "balance": 89439.59 },
@@ -239,24 +414,74 @@
 		});
 
 		this.next = (e) => {
-			let selected = tag.grid.get(tag.grid.getSelection()[0]);
-			let account = selected.account;
-			Events.trigger('choose-account.next', {
-				account: selected.account,
-				name: selected.name,
-			});
+			// todo
+		}
+
+
+		this.autoCategoriseIncome = (e) => {
+			for (let record of tag.grid.records) {
+				if (record.amount > 0) {
+					record.tag = 'income-row-auto';
+				}
+			}
+			tag.grid.refresh();
+		}
+
+		this.autoCategoriseExpense = (e) => {
+			for (let record of tag.grid.records) {
+				let desc = record.description.toLowerCase();
+				if (!record.tag && /direct debit/.test(desc)) {
+					record.tag = 'expense-row-auto';
+				}
+			}
+			tag.grid.refresh();
+		}
+
+		this.filter = (e) => {
+			let f = e.currentTarget.value;
+			let records = [];
+			for (let record of originalRecords) {
+				let desc = record.description.toLowerCase();
+				if (new RegExp(f).test(desc)) {
+					records.push(record);
+				}
+			}
+			tag.grid.records = records;
+			tag.grid.refresh();
+		}
+
+		this.clear = (e) => {
+			$('input[name=description]').val(undefined);
+			tag.grid.records = originalRecords;
+			tag.grid.refresh();
+		}
+
+		this.categoriseAllIncome = (e) => {
+			for (let record of tag.grid.records) {
+				record.tag = 'income-row';
+			}
+			tag.grid.refresh();
+		}
+
+		this.categoriseAllExpense = (e) => {
+			for (let record of tag.grid.records) {
+				record.tag = 'expense-row';
+			}
+			tag.grid.refresh();
 		}
 
 		function should_disable_next(grid) {
 			return !grid || !grid.last || !grid.last.selection || !grid.last.selection.indexes || grid.last.selection.indexes.length === 0;
 		}
 
-		this.render_grid = function (accounts) {
+		this.render_grid = function (transactions) {
 			// add recid
 			let i = 0;
-			accounts.forEach(element => {
+			transactions.forEach(element => {
 				element.recid = ++i;
 			});
+
+			originalRecords = transactions;
 
 			// render
 			tag.grid = $('#current-account-grid').w2grid({
@@ -270,7 +495,7 @@
 					{ field: 'balance', caption: 'Balance', size: '20%', sortable: true },
 					//{ field: 'tag', caption: 'Tag', size: '5%', sortable: true },
 				],
-				records: accounts,
+				records: transactions,
 				onClick: function (event) {
 					let selectionBefore = tag.grid.get(tag.grid.getSelection()[0]);
 					event.onComplete = function () {
