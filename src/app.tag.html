@@ -1,0 +1,191 @@
+<app>
+	<div class="container">
+		<h1>Income &amp; Expenses selection demo</h1>
+		<div class="row">
+			<div class="col-xs-12">
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						<h3 class="panel-title">
+							<b>Check and select income and expenses</b>
+						</h3>
+					</div>
+					<div class="panel-body">
+						<div class="row">
+							<div class="col-xs-12">
+								<div id="current-account-grid" style="height: 450px"></div>
+							</div>
+						</div>
+						<div style="margin-top: 15px;">
+							Notes:
+							<ul>
+								<li>Has a filter row to search for transactions</li>
+								<li>Click to toggle income (or expense) on/off</li>
+								<li>Optionally - pre-apply a set of known good income/expense rules - highlight in different color so staff know to check
+									them</li>
+							</ul>
+						</div>
+						<div class="row">
+							<div class="col-xs-offset-11">
+								<button onclick={ next } class="btn btn-primary btn-sm" type="button" disabled="disabled">Next</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<style>
+		.w2ui-grid .w2ui-grid-body .w2ui-grid-records table tr.w2ui-selected,
+		.w2ui-grid .w2ui-grid-body .w2ui-grid-records table tr td.w2ui-selected {
+			color: #000000 !important;
+			background-color: #1f80dd !important;
+		}
+	</style>
+
+	<script>
+		console.log('app.tag.html')
+
+		this.on('mount', function () {
+			console.log('app mount', this._riot_id)
+		})
+
+		let tag = this;
+
+		let hardcoded = [
+			{ "date": "2017/09/01", "description": "INETBNK PAY DEBIT ABSA BANK Graham Kingma ", "amount": -820, "balance": 89439.59 },
+			{ "date": "2017/09/01", "description": "ATM WITHDRAWAL  CARD NO. 8380", "amount": -1500, "balance": 87939.59 },
+			{ "date": "2017/09/01", "description": "TRANSACTION CHARGE  ", "amount": -30.2, "balance": 87909.39 },
+			{ "date": "2017/09/01", "description": "DIRECT DEBIT AVERESPSEA5502AVE20RESPO83HO ", "amount": -545, "balance": 87364.39 },
+			{ "date": "2017/09/01", "description": "DIRECT DEBIT SANTAM    J062004347 ", "amount": -963.44, "balance": 86400.95 },
+			{ "date": "2017/09/01", "description": "DIRECT DEBIT VODACOM 0274081376 I1871409 ", "amount": -729.83, "balance": 85671.12 },
+			{ "date": "2017/09/02", "description": "DIRECT DEBIT PAYMENT TO ACC47876921992180 ", "amount": -8772.21, "balance": 76898.91 },
+			{ "date": "2017/09/04", "description": "DIRECT DEBIT RSAWEB    112222999 SAGEPAY ", "amount": -1276.26, "balance": 75622.65 },
+			{ "date": "2017/09/07", "description": "INETBNK PAY DEBIT ABSA BANK Ivor ", "amount": -1600, "balance": 74022.65 },
+			{ "date": "2017/09/08", "description": "CREDIT INTEREST  ", "amount": 4.12, "balance": 74026.77 },
+			{ "date": "2017/09/08", "description": "BONUS INTEREST  ", "amount": 3.14, "balance": 74029.91 },
+			{ "date": "2017/09/11", "description": "INETBNK PAY DEBIT ABSA BANK Graham Kingma ", "amount": -820, "balance": 73209.91 },
+			{ "date": "2017/09/13", "description": "INETBNK PAY DEBIT ABSA BANK Bike light ", "amount": -995, "balance": 72214.91 },
+			{ "date": "2017/09/13", "description": "INETBNK PAY DEBIT ABSA BANK Kleinskys picture ", "amount": -1400, "balance": 70814.91 },
+			{ "date": "2017/09/16", "description": "DIRECT DEBIT GIVENGAIN ", "amount": -210, "balance": 70604.91 },
+			{ "date": "2017/09/19", "description": "INETBNK PAY DEBIT ABSA BANK Graham Kingma ", "amount": -820, "balance": 69784.91 },
+			{ "date": "2017/09/19", "description": "INETBNK TRF DEBIT ABSA BANK 4787692199218012 ", "amount": -22000, "balance": 47784.91 },
+			{ "date": "2017/09/19", "description": "INETBNK TRF DEBIT ABSA BANK 4787692199218012 ", "amount": -14000, "balance": 33784.91 },
+			{ "date": "2017/09/28", "description": "INETBNK PAY DEBIT ABSA BANK UniForum SA ", "amount": -250.8, "balance": 33534.11 },
+			{ "date": "2017/09/28", "description": "INETBNK PAY DEBIT ABSA BANK 1612214801025245 ", "amount": -260, "balance": 33274.11 },
+			{ "date": "2017/09/28", "description": "INETBNK PAY DEBIT ABSA BANK Galbraith Rushby ", "amount": -613, "balance": 32661.11 },
+			{ "date": "2017/09/29", "description": "DIRECT DEBIT TELKOMMOBI501829325010409399 ", "amount": -50.3, "balance": 32610.81 },
+			{ "date": "2017/09/30", "description": "ABSA DIRECT INET/MOB FEE/FOOI ", "amount": 0, "balance": 32610.81 },
+			{ "date": "2017/09/30", "description": "INTERNET BANK FEE  ", "amount": -380.5, "balance": 32230.31 },
+			{ "date": "2017/09/30", "description": "DIRECT DEBIT A COCT ", "amount": -2032.36, "balance": 30197.95 },
+			{ "date": "2017/10/02", "description": "DIRECT DEBIT AVERESPSEA5502AVE20RESPO60K8 ", "amount": -545, "balance": 29652.95 },
+			{ "date": "2017/10/02", "description": "DIRECT DEBIT SANTAM    J062471500 ", "amount": -963.44, "balance": 28689.51 },
+			{ "date": "2017/10/02", "description": "DIRECT DEBIT RSAWEB    112960999 SAGEPAY ", "amount": -1099, "balance": 27590.51 },
+			{ "date": "2017/10/02", "description": "DIRECT DEBIT VODACOM 0276000068 I1871409 ", "amount": -559.26, "balance": 27031.25 },
+			{ "date": "2017/10/05", "description": "INETBNK PAY DEBIT ABSA BANK Graham Kingma ", "amount": -820, "balance": 26211.25 },
+			{ "date": "2017/10/06", "description": "ATM WITHDRAWAL  CARD NO. 8380", "amount": -2000, "balance": 24211.25 },
+			{ "date": "2017/10/08", "description": "CREDIT INTEREST  ", "amount": 1.89, "balance": 24213.14 },
+			{ "date": "2017/10/08", "description": "BONUS INTEREST  ", "amount": 0.99, "balance": 24214.13 },
+			{ "date": "2017/10/09", "description": "DIRECT CREDIT I COPELYNWITHDRAWAL ", "amount": 100000, "balance": 124214.13 },
+			{ "date": "2017/10/10", "description": "INETBNK PAY DEBIT ABSA BANK Graham Kingma ", "amount": -820, "balance": 123394.13 },
+			{ "date": "2017/10/10", "description": "INETBNK PAY DEBIT ABSA BANK Ivor ", "amount": -1200, "balance": 122194.13 },
+			{ "date": "2017/10/12", "description": "INETBNK PAY DEBIT ABSA BANK Ian ", "amount": -7200, "balance": 114994.13 },
+			{ "date": "2017/10/13", "description": "INETBNK PAY DEBIT ABSA BANK Graham Kingma ", "amount": -820, "balance": 114174.13 },
+			{ "date": "2017/10/16", "description": "DIRECT DEBIT GIVENGAIN ", "amount": -210, "balance": 113964.13 },
+			{ "date": "2017/10/19", "description": "INETBNK PAY DEBIT ABSA BANK NetReturn ", "amount": -500, "balance": 113464.13 },
+			{ "date": "2017/10/23", "description": "INETBNK PAY DEBIT ABSA BANK Graham Kingma", "amount": -820, "balance": 112644.13 },
+			{ "date": "2017/10/23", "description": "INETBNK PAY DEBIT ABSA BANK Ian", "amount": -7200, "balance": 105444.13 },
+			{ "date": "2017/10/23", "description": "POS PURCHASE 000000306139 Hokey Poke CARD NO. 8380", "amount": -110, "balance": 105334.13 },
+			{ "date": "2017/10/23", "description": "TRANSACTION CHARGE", "amount": -3.85, "balance": 105330.28 },
+			{ "date": "2017/10/24", "description": "POS PURCHASE 000001195040 NU GREEN POI CARD NO. 8380", "amount": -128, "balance": 105202.28 },
+			{ "date": "2017/10/24", "description": "TRANSACTION CHARGE", "amount": -3.85, "balance": 105198.43 },
+			{ "date": "2017/10/24", "description": "POS PURCHASE 001289756678 EL BURRO TAQ CARD NO. 8380", "amount": -175, "balance": 105023.43 },
+			{ "date": "2017/10/24", "description": "TRANSACTION CHARGE", "amount": -3.85, "balance": 105019.58 },
+			{ "date": "2017/10/25", "description": "ATM WITHDRAWAL  CARD NO. 8380", "amount": -2000, "balance": 103019.58 },
+			{ "date": "2017/10/25", "description": "POS PURCHASE 453504100129 WOOLWORTHS CARD NO. 8380", "amount": -166.4, "balance": 102853.18 },
+			{ "date": "2017/10/25", "description": "TRANSACTION CHARGE", "amount": -3.85, "balance": 102849.33 },
+			{ "date": "2017/10/25", "description": "POS PURCHASE 000620092810 Clicks Gleng CARD NO. 8380", "amount": -162, "balance": 102687.33 },
+			{ "date": "2017/10/25", "description": "TRANSACTION CHARGE", "amount": -3.85, "balance": 102683.48 },
+			{ "date": "2017/10/31", "description": "DIRECT DEBIT TELKOMMOBI501829325010418286", "amount": -17, "balance": 102666.48 },
+			{ "date": "2017/10/31", "description": "ABSA DIRECT INET/MOB FEE/FOOI", "amount": 0, "balance": 102666.48 },
+			{ "date": "2017/10/31", "description": "INTERNET BANK FEE", "amount": -329.5, "balance": 102336.98 },
+			{ "date": "2017/10/31", "description": "DIRECT DEBIT A COCT", "amount": -2313.26, "balance": 100023.72 },
+			{ "date": "2017/11/01", "description": "DIRECT DEBIT SANTAM    J063047569", "amount": -963.44, "balance": 99060.28 },
+			{ "date": "2017/11/01", "description": "DIRECT DEBIT RSAWEB    113988482 SAGEPAY", "amount": -1099, "balance": 97961.28 },
+			{ "date": "2017/11/01", "description": "DIRECT DEBIT VODACOM 0277917808 I1871409", "amount": -538.21, "balance": 97423.07 },
+			{ "date": "2017/11/01", "description": "DIRECT DEBIT AVERESPSEA5502AVE20RESPOOT4U", "amount": -545, "balance": 96878.07 },
+			{ "date": "2017/11/02", "description": "DIRECT DEBIT PAYMENT TO ACC47876921992180", "amount": -24766.31, "balance": 72111.76 },
+			{ "date": "2017/11/03", "description": "INETBNK PAY DEBIT ABSA BANK Ian", "amount": -7200, "balance": 64911.76 },
+			{ "date": "2017/11/08", "description": "CREDIT INTEREST", "amount": 4.17, "balance": 64915.93 },
+			{ "date": "2017/11/08", "description": "BONUS INTEREST", "amount": 1.03, "balance": 64916.96 },
+			{ "date": "2017/11/08", "description": "INETBNK PAY DEBIT ABSA BANK Graham Kingma", "amount": -1640, "balance": 63276.96 },
+			{ "date": "2017/11/10", "description": "INETBNK PAY DEBIT ABSA BANK Graham Kingma", "amount": -820, "balance": 62456.96 },
+			{ "date": "2017/11/16", "description": "INETBNK PAY DEBIT ABSA BANK Ivor", "amount": -1600, "balance": 60856.96 },
+			{ "date": "2017/11/16", "description": "DIRECT DEBIT GIVENGAIN", "amount": -210, "balance": 60646.96 },
+			{ "date": "2017/11/18", "description": "INETBNK PAY DEBIT ABSA BANK Graham Kingma", "amount": -820, "balance": 59826.96 },
+			{ "date": "2017/11/20", "description": "ATM WITHDRAWAL  CARD NO. 8380", "amount": -1000, "balance": 58826.96 },
+			{ "date": "2017/11/20", "description": "TRANSACTION CHARGE", "amount": -23.45, "balance": 58803.51 },
+			{ "date": "2017/11/22", "description": "DIRECT CREDIT A SARS    1956057036 14187", "amount": 1391.59, "balance": 60195.1 },
+			{ "date": "2017/11/30", "description": "ABSA DIRECT INET/MOB FEE/FOOI", "amount": 0, "balance": 60195.1 },
+			{ "date": "2017/11/30", "description": "INTERNET BANK FEE", "amount": -191.5, "balance": 60003.6 },
+			{ "date": "2017/11/30", "description": "DIRECT DEBIT A COCT", "amount": -2042.24, "balance": 57961.36 },
+			{ "date": "2017/12/01", "description": "DIRECT DEBIT AVERESPSEA5502AVE20RESPOJVCL", "amount": -545, "balance": 57416.36 },
+			{ "date": "2017/12/01", "description": "DEBIT ORDER DEBIT ABSA RL   REWARDS F", "amount": -23, "balance": 57393.36 },
+			{ "date": "2017/12/01", "description": "DIRECT DEBIT VODACOM 0279923819 I1871409", "amount": -526.29, "balance": 56867.07 },
+			{ "date": "2017/12/01", "description": "DIRECT DEBIT RSAWEB    114815910 SAGEPAY", "amount": -1099, "balance": 55768.07 },
+			{ "date": "2017/12/01", "description": "DIRECT DEBIT SANTAM    J063565644", "amount": -963.44, "balance": 54804.63 },
+			{ "date": "2017/12/01", "description": "DIRECT DEBIT DISC PREM M6001219  -1674052", "amount": -1870, "balance": 52934.63 },
+			{ "date": "2017/12/02", "description": "DIRECT DEBIT PAYMENT TO ACC47876921992180", "amount": -12772.8, "balance": 40161.83 },
+			{ "date": "2017/12/04", "description": "INETBNK PAY DEBIT ABSA BANK Bush", "amount": -1030, "balance": 39131.83 },
+			{ "date": "2017/12/04", "description": "DIRECT CREDIT HIREME PB VERIFY", "amount": 27.36, "balance": 39159.19 },
+		];
+
+		this.on('mount', function () {
+			this.render_grid(hardcoded);
+		});
+
+		this.next = (e) => {
+			let selected = tag.grid.get(tag.grid.getSelection()[0]);
+			let account = selected.account;
+			Events.trigger('choose-account.next', {
+				account: selected.account,
+				name: selected.name,
+			});
+		}
+
+		function should_disable_next(grid) {
+			return !grid || !grid.last || !grid.last.selection || !grid.last.selection.indexes || grid.last.selection.indexes.length === 0;
+		}
+
+		this.render_grid = function (accounts) {
+			// add recid
+			let i = 0;
+			accounts.forEach(element => {
+				element.recid = ++i;
+			});
+
+			// render
+			tag.grid = $('#current-account-grid').w2grid({
+				name: 'current-account-grid',
+				multiSelect: false,
+				columns: [
+					{ field: 'date', caption: 'Date', size: '20%' },
+					{ field: 'description', caption: 'Description', size: '30%' },
+					{ field: 'amount', caption: 'Amount', size: '20%' },
+					{ field: 'balance', caption: 'Balance', size: '20%' },
+				],
+				records: accounts,
+				onClick: function (event) {
+					event.onComplete = function () {
+						let disabled = should_disable_next(tag.grid);
+						$('button', tag.root).prop('disabled', disabled);
+					}
+				}
+			});
+
+			// fit height
+			var height = (tag.grid.records.length + 1) * tag.grid.recordHeight + 2;
+			$('#current-account-grid').height(height);
+		}
+	</script>
+</app>
