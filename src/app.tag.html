@@ -263,14 +263,15 @@
 				name: 'current-account-grid',
 				multiSelect: false,
 				columns: [
-					{ field: 'date', caption: 'Date', size: '12%' },
-					{ field: 'description', caption: 'Description', size: '56%' },
-					{ field: 'amount', caption: 'Amount', size: '12%' },
-					{ field: 'balance', caption: 'Balance', size: '20%' },
-					//{ field: 'tag', caption: 'Tag', size: '5%' },
+					{ field: 'recid', caption: 'Id', size: '5px', sortable: true },
+					{ field: 'date', caption: 'Date', size: '12%', sortable: true },
+					{ field: 'description', caption: 'Description', size: '56%', sortable: true },
+					{ field: 'amount', caption: 'Amount', size: '12%', sortable: true },
+					{ field: 'balance', caption: 'Balance', size: '20%', sortable: true },
+					//{ field: 'tag', caption: 'Tag', size: '5%', sortable: true },
 				],
 				records: accounts,
-				onClick: function (event, b, c) {
+				onClick: function (event) {
 					let selectionBefore = tag.grid.get(tag.grid.getSelection()[0]);
 					event.onComplete = function () {
 						let selected = tag.grid.get(tag.grid.getSelection()[0]);
@@ -287,10 +288,14 @@
 							selected.tag = rowClass;
 						}
 
-						tag.grid.refresh(); // render Tag column
-
-						// apply css class
-						ResetStyling(tag.grid);
+						tag.grid.refresh();
+					}
+				},
+				onRefresh: function (event) {
+					if (tag.grid) {
+						event.onComplete = function () {
+							ResetStyling(tag.grid);
+						}
 					}
 				}
 			});
