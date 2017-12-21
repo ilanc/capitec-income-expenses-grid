@@ -9,7 +9,8 @@
     "build-app": "webpack --progress --colors --display-modules --config src/webpack.config.js",
     "watch-app": "webpack --progress --colors --display-modules --config src/webpack.config.js --watch",
     "build-static": "rsync src/favicon.ico dist/",
-    "start": "live-server dist/"
+    "start": "live-server dist/",
+    "deploy-surge": "surge dist capitec-test.cloudbank.co.za"
   },
   "author": "Ilan Copelyn",
   "license": "MIT",
@@ -29,6 +30,7 @@
     "riot-hot-reload": "1.0.0",
     "riot-tag-loader": "1.0.0",
     "style-loader": "0.18.2",
+    "surge": "0.19.0",
     "webpack": "2.4.1",
     "webpack-dev-server": "2.4.5"
   },
