@@ -54,12 +54,22 @@
 	</div>
 
 	<style>
-		/* grid select color */
+		/* grid: select color */
 
+		/*
 		.w2ui-grid .w2ui-grid-body .w2ui-grid-records table tr.w2ui-selected,
 		.w2ui-grid .w2ui-grid-body .w2ui-grid-records table tr td.w2ui-selected {
 			color: #000000 !important;
 			background-color: #1f80dd !important;
+		}
+		*/
+
+		.income-row {
+			background-color: #4285F4 !important;
+		}
+
+		.expense-row {
+			background-color: #f44286 !important;
 		}
 
 		/* Radio buttons : https://mdbootstrap.com/components/bootstrap-radio-button/ */
@@ -120,6 +130,7 @@
 			border-color: #4285F4;
 			background-color: #4285F4;
 		}
+
 		[type=radio]:checked+label.expense:after {
 			border-color: #f44286;
 			background-color: #f44286;
@@ -255,21 +266,31 @@
 					{ field: 'date', caption: 'Date', size: '12%' },
 					{ field: 'description', caption: 'Description', size: '56%' },
 					{ field: 'amount', caption: 'Amount', size: '12%' },
-					{ field: 'balance', caption: 'Balance', size: '15%' },
-					{ field: 'tag', caption: 'Tag', size: '5%' },
+					{ field: 'balance', caption: 'Balance', size: '20%' },
+					//{ field: 'tag', caption: 'Tag', size: '5%' },
 				],
 				records: accounts,
-				onClick: function (event) {
+				onClick: function (event, b, c) {
+					let selectionBefore = tag.grid.get(tag.grid.getSelection()[0]);
 					event.onComplete = function () {
 						let selected = tag.grid.get(tag.grid.getSelection()[0]);
-			      if (selected.tag) {
+						if (!selected) {
+							selected = selectionBefore;
+						}
+
+						let rowClass = $("#radio-income:checked").val() ? 'income-row' : 'expense-row';
+						if (selected.tag && selected.tag === rowClass) {
 							// toggle off
 							selected.tag = undefined;
 						} else {
 							// toggle on
-							selected.tag = $("#radio-income:checked").val() ? 'income' : 'expense';
+							selected.tag = rowClass;
 						}
-						tag.grid.render();
+
+						tag.grid.refresh(); // render Tag column
+
+						// apply css class
+						ResetStyling(tag.grid);
 					}
 				}
 			});
@@ -277,8 +298,27 @@
 			// fit height
 			//var height = (tag.grid.records.length + 1) * tag.grid.recordHeight + 2;
 			//$('#current-account-grid').height(height);
-			tag.grid.render(); // hack - column width not calcualted correctly on first render
+			tag.grid.refresh(); // hack - column width not calcualted correctly on first render
 			//w2ui["current-account-grid"].render();
+		}
+
+		function SetRowColor(grid, record, cssColorClass, on) {
+			var tr = $('#grid_' + grid.name + '_rec_' + w2utils.escapeId(record.recid));
+			if (on) {
+				tr.addClass(cssColorClass);
+			} else {
+				tr.removeClass(cssColorClass);
+			}
+		}
+
+		function ResetStyling(grid) {
+			for (let record of grid.records) {
+				var tr = $('#grid_' + grid.name + '_rec_' + w2utils.escapeId(record.recid));
+				tr.removeClass('w2ui-selected');
+				if (record.tag) {
+					tr.addClass(record.tag);
+				}
+			}
 		}
 	</script>
 </app>
