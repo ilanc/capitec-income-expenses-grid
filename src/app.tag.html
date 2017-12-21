@@ -255,13 +255,21 @@
 					{ field: 'date', caption: 'Date', size: '12%' },
 					{ field: 'description', caption: 'Description', size: '56%' },
 					{ field: 'amount', caption: 'Amount', size: '12%' },
-					{ field: 'balance', caption: 'Balance', size: '20%' },
+					{ field: 'balance', caption: 'Balance', size: '15%' },
+					{ field: 'tag', caption: 'Tag', size: '5%' },
 				],
 				records: accounts,
 				onClick: function (event) {
 					event.onComplete = function () {
-						let disabled = should_disable_next(tag.grid);
-						$('button', tag.root).prop('disabled', disabled);
+						let selected = tag.grid.get(tag.grid.getSelection()[0]);
+			      if (selected.tag) {
+							// toggle off
+							selected.tag = undefined;
+						} else {
+							// toggle on
+							selected.tag = $("#radio-income:checked").val() ? 'income' : 'expense';
+						}
+						tag.grid.render();
 					}
 				}
 			});
@@ -269,7 +277,8 @@
 			// fit height
 			//var height = (tag.grid.records.length + 1) * tag.grid.recordHeight + 2;
 			//$('#current-account-grid').height(height);
-			w2ui["current-account-grid"].render(); // hack - column width not calcualted correctly on first render
+			tag.grid.render(); // hack - column width not calcualted correctly on first render
+			//w2ui["current-account-grid"].render();
 		}
 	</script>
 </app>
