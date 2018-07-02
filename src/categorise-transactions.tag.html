@@ -1,0 +1,537 @@
+<categorise-transactions>
+  <div class="row">
+    <div class="col-xs-12">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          Check and select income and expenses
+        </div>
+        <div class="panel-body">
+          <div class="row">
+            <div class="col-xs-12">
+              <fieldset>
+                <legend>Mark as</legend>
+                <form class="form-inline">
+                  <div class="form-group">
+                    <input name="mark-as-group" type="radio" id="radio-income" checked="checked">
+                    <label for="radio-income" class="income">Income</label>
+                  </div>
+                  <div class="form-group">
+                    <input name="mark-as-group" type="radio" id="radio-expense">
+                    <label for="radio-expense" class="expense">Expense</label>
+                  </div>
+                </form>
+              </fieldset>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-xs-12">
+              <fieldset>
+                <legend>Categorise</legend>
+                <button onclick={ autoCategoriseIncome } class="btn income-btn btn-sm" type="button">Try auto-categorise income</button>
+                <button onclick={ autoCategoriseExpense } class="btn expense-btn btn-sm" type="button">Try auto-categorise expense</button>
+              </fieldset>
+            </div>
+          </div>
+          <div class="row" style="margin-top: 15px;">
+            <div class="col-xs-12">
+              <fieldset>
+                <legend>Filter</legend>
+                <form>
+                  <div class="row form-group">
+                    <label class="col-xs-1 control-label">Description</label>
+                    <input class="col-xs-6" name="description" type="text" class="form-control" oninput={ filter }>
+                    <button onclick={ clear } class="btn btn-white btn-sm" type="button" style="margin-left: 5px;">X</button>
+                    <button onclick={ categoriseAllIncome } class="btn income-btn btn-sm" type="button">Income</button>
+                    <button onclick={ categoriseAllExpense } class="btn expense-btn btn-sm" type="button">Expense</button>
+                  </div>
+                </form>
+              </fieldset>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-xs-12">
+              <h3>Transactions</h3>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-xs-12">
+              <div id="current-account-grid" style="height: 450px;"></div>
+            </div>
+          </div>
+          <div style="margin-top: 15px;">
+            Notes:
+            <ul>
+              <li>Click row to toggle income (or expense) on/off</li>
+              <li>Optionally - pre-apply a set of income/expense rules - highlight in different color so staff know to check
+                them
+              </li>
+              <li>Has a filter row to search for transactions</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    /* grid: select color */
+
+    /*
+		.w2ui-grid .w2ui-grid-body .w2ui-grid-records table tr.w2ui-selected,
+		.w2ui-grid .w2ui-grid-body .w2ui-grid-records table tr td.w2ui-selected {
+			color: #000000 !important;
+			background-color: #1f80dd !important;
+		}
+		*/
+
+    .income-row {
+      background-color: #4285F4 !important;
+    }
+
+    .income-row-auto {
+      background-color: #86b4ff !important;
+    }
+
+    .expense-row {
+      background-color: #f44286 !important;
+    }
+
+    .expense-row-auto {
+      background-color: #f88ab4 !important;
+    }
+
+    /* Radio buttons : https://mdbootstrap.com/components/bootstrap-radio-button/ */
+
+    input[type=radio] {
+      visibility: hidden;
+    }
+
+    [type=radio]+label {
+      -webkit-transition: .28s ease;
+      transition: .28s ease;
+    }
+
+    [type=radio]+label,
+    [type=checkbox]+label {
+      position: relative;
+      padding-left: 35px;
+      cursor: pointer;
+      display: inline-block;
+      height: 25px;
+      line-height: 25px;
+      font-size: 1.5rem;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -khtml-user-select: none;
+      -ms-user-select: none;
+    }
+
+    [type=radio]:checked+label:before {
+      border-color: transparent;
+    }
+
+    [type=radio]+label:after,
+    [type=radio]+label:before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      margin: 4px;
+      width: 16px;
+      height: 16px;
+      z-index: 0;
+      border-radius: 50%;
+      border-style: solid;
+      border-width: 2px;
+      -webkit-transition: .28s ease;
+      transition: .28s ease;
+    }
+
+    [type=radio]:checked+label:after {
+      z-index: 0;
+      -webkit-transform: scale(1.02);
+      -ms-transform: scale(1.02);
+      transform: scale(1.02);
+    }
+
+    [type=radio]:checked+label.income:after {
+      border-color: #4285F4;
+      background-color: #4285F4;
+    }
+
+    [type=radio]:checked+label.expense:after {
+      border-color: #f44286;
+      background-color: #f44286;
+    }
+
+    /* styled buttons: using https://lesstester.com & bootstraps .button-variant */
+
+    /* income-btn */
+
+    .income-btn {
+      color: #ffffff;
+      background-color: #4285F4;
+      border-color: #4285F4;
+    }
+
+    .income-btn:focus,
+    .income-btn.focus {
+      color: #ffffff;
+      background-color: #1266f1;
+      border-color: #0a47ac;
+    }
+
+    .income-btn:hover {
+      color: #ffffff;
+      background-color: #1266f1;
+      border-color: #0e61eb;
+    }
+
+    .income-btn:active,
+    .income-btn.active,
+    .open>.dropdown-toggle.income-btn {
+      color: #ffffff;
+      background-color: #1266f1;
+      border-color: #0e61eb;
+    }
+
+    .income-btn:active:hover,
+    .income-btn.active:hover,
+    .open>.dropdown-toggle.income-btn:hover,
+    .income-btn:active:focus,
+    .income-btn.active:focus,
+    .open>.dropdown-toggle.income-btn:focus,
+    .income-btn:active.focus,
+    .income-btn.active.focus,
+    .open>.dropdown-toggle.income-btn.focus {
+      color: #ffffff;
+      background-color: #0c57d3;
+      border-color: #0a47ac;
+    }
+
+    .income-btn:active,
+    .income-btn.active,
+    .open>.dropdown-toggle.income-btn {
+      background-image: none;
+    }
+
+    .income-btn.disabled:hover,
+    .income-btn[disabled]:hover,
+    fieldset[disabled] .income-btn:hover,
+    .income-btn.disabled:focus,
+    .income-btn[disabled]:focus,
+    fieldset[disabled] .income-btn:focus,
+    .income-btn.disabled.focus,
+    .income-btn[disabled].focus,
+    fieldset[disabled] .income-btn.focus {
+      background-color: #4285F4;
+      border-color: #4285F4;
+    }
+
+    .income-btn .badge {
+      color: #4285F4;
+      background-color: #ffffff;
+    }
+
+    /* expense-btn */
+
+    .expense-btn {
+      color: #ffffff;
+      background-color: #f44286;
+      border-color: #f44286;
+    }
+
+    .expense-btn:focus,
+    .expense-btn.focus {
+      color: #ffffff;
+      background-color: #f11267;
+      border-color: #ac0a48;
+    }
+
+    .expense-btn:hover {
+      color: #ffffff;
+      background-color: #f11267;
+      border-color: #eb0e62;
+    }
+
+    .expense-btn:active,
+    .expense-btn.active,
+    .open>.dropdown-toggle.expense-btn {
+      color: #ffffff;
+      background-color: #f11267;
+      border-color: #eb0e62;
+    }
+
+    .expense-btn:active:hover,
+    .expense-btn.active:hover,
+    .open>.dropdown-toggle.expense-btn:hover,
+    .expense-btn:active:focus,
+    .expense-btn.active:focus,
+    .open>.dropdown-toggle.expense-btn:focus,
+    .expense-btn:active.focus,
+    .expense-btn.active.focus,
+    .open>.dropdown-toggle.expense-btn.focus {
+      color: #ffffff;
+      background-color: #d30c58;
+      border-color: #ac0a48;
+    }
+
+    .expense-btn:active,
+    .expense-btn.active,
+    .open>.dropdown-toggle.expense-btn {
+      background-image: none;
+    }
+
+    .expense-btn.disabled:hover,
+    .expense-btn[disabled]:hover,
+    fieldset[disabled] .expense-btn:hover,
+    .expense-btn.disabled:focus,
+    .expense-btn[disabled]:focus,
+    fieldset[disabled] .expense-btn:focus,
+    .expense-btn.disabled.focus,
+    .expense-btn[disabled].focus,
+    fieldset[disabled] .expense-btn.focus {
+      background-color: #f44286;
+      border-color: #f44286;
+    }
+
+    .expense-btn .badge {
+      color: #f44286;
+      background-color: #ffffff;
+    }
+  </style>
+
+  <script>
+    console.log('app.tag.html')
+
+    this.on('mount', function () {
+      console.log('app mount', this._riot_id)
+    })
+
+    let tag = this;
+
+    let originalRecords = undefined;
+
+    let hardcoded = [
+      { "date": "2017/09/01", "description": "INETBNK PAY DEBIT ABSA BANK Graham Kingma ", "amount": -820, "balance": 89439.59 },
+      { "date": "2017/09/01", "description": "ATM WITHDRAWAL  CARD NO. 8380", "amount": -1500, "balance": 87939.59 },
+      { "date": "2017/09/01", "description": "TRANSACTION CHARGE  ", "amount": -30.2, "balance": 87909.39 },
+      { "date": "2017/09/01", "description": "DIRECT DEBIT AVERESPSEA5502AVE20RESPO83HO ", "amount": -545, "balance": 87364.39 },
+      { "date": "2017/09/01", "description": "DIRECT DEBIT SANTAM    J062004347 ", "amount": -963.44, "balance": 86400.95 },
+      { "date": "2017/09/01", "description": "DIRECT DEBIT VODACOM 0274081376 I1871409 ", "amount": -729.83, "balance": 85671.12 },
+      { "date": "2017/09/02", "description": "DIRECT DEBIT PAYMENT TO ACC47876921992180 ", "amount": -8772.21, "balance": 76898.91 },
+      { "date": "2017/09/04", "description": "DIRECT DEBIT RSAWEB    112222999 SAGEPAY ", "amount": -1276.26, "balance": 75622.65 },
+      { "date": "2017/09/07", "description": "INETBNK PAY DEBIT ABSA BANK Ivor ", "amount": -1600, "balance": 74022.65 },
+      { "date": "2017/09/08", "description": "CREDIT INTEREST  ", "amount": 4.12, "balance": 74026.77 },
+      { "date": "2017/09/08", "description": "BONUS INTEREST  ", "amount": 3.14, "balance": 74029.91 },
+      { "date": "2017/09/11", "description": "INETBNK PAY DEBIT ABSA BANK Graham Kingma ", "amount": -820, "balance": 73209.91 },
+      { "date": "2017/09/13", "description": "INETBNK PAY DEBIT ABSA BANK Bike light ", "amount": -995, "balance": 72214.91 },
+      { "date": "2017/09/13", "description": "INETBNK PAY DEBIT ABSA BANK Kleinskys picture ", "amount": -1400, "balance": 70814.91 },
+      { "date": "2017/09/16", "description": "DIRECT DEBIT GIVENGAIN ", "amount": -210, "balance": 70604.91 },
+      { "date": "2017/09/19", "description": "INETBNK PAY DEBIT ABSA BANK Graham Kingma ", "amount": -820, "balance": 69784.91 },
+      { "date": "2017/09/19", "description": "INETBNK TRF DEBIT ABSA BANK 4787692199218012 ", "amount": -22000, "balance": 47784.91 },
+      { "date": "2017/09/19", "description": "INETBNK TRF DEBIT ABSA BANK 4787692199218012 ", "amount": -14000, "balance": 33784.91 },
+      { "date": "2017/09/28", "description": "INETBNK PAY DEBIT ABSA BANK UniForum SA ", "amount": -250.8, "balance": 33534.11 },
+      { "date": "2017/09/28", "description": "INETBNK PAY DEBIT ABSA BANK 1612214801025245 ", "amount": -260, "balance": 33274.11 },
+      { "date": "2017/09/28", "description": "INETBNK PAY DEBIT ABSA BANK Galbraith Rushby ", "amount": -613, "balance": 32661.11 },
+      { "date": "2017/09/29", "description": "DIRECT DEBIT TELKOMMOBI501829325010409399 ", "amount": -50.3, "balance": 32610.81 },
+      { "date": "2017/09/30", "description": "ABSA DIRECT INET/MOB FEE/FOOI ", "amount": 0, "balance": 32610.81 },
+      { "date": "2017/09/30", "description": "INTERNET BANK FEE  ", "amount": -380.5, "balance": 32230.31 },
+      { "date": "2017/09/30", "description": "DIRECT DEBIT A COCT ", "amount": -2032.36, "balance": 30197.95 },
+      { "date": "2017/10/02", "description": "DIRECT DEBIT AVERESPSEA5502AVE20RESPO60K8 ", "amount": -545, "balance": 29652.95 },
+      { "date": "2017/10/02", "description": "DIRECT DEBIT SANTAM    J062471500 ", "amount": -963.44, "balance": 28689.51 },
+      { "date": "2017/10/02", "description": "DIRECT DEBIT RSAWEB    112960999 SAGEPAY ", "amount": -1099, "balance": 27590.51 },
+      { "date": "2017/10/02", "description": "DIRECT DEBIT VODACOM 0276000068 I1871409 ", "amount": -559.26, "balance": 27031.25 },
+      { "date": "2017/10/05", "description": "INETBNK PAY DEBIT ABSA BANK Graham Kingma ", "amount": -820, "balance": 26211.25 },
+      { "date": "2017/10/06", "description": "ATM WITHDRAWAL  CARD NO. 8380", "amount": -2000, "balance": 24211.25 },
+      { "date": "2017/10/08", "description": "CREDIT INTEREST  ", "amount": 1.89, "balance": 24213.14 },
+      { "date": "2017/10/08", "description": "BONUS INTEREST  ", "amount": 0.99, "balance": 24214.13 },
+      { "date": "2017/10/09", "description": "DIRECT CREDIT I COPELYNWITHDRAWAL ", "amount": 100000, "balance": 124214.13 },
+      { "date": "2017/10/10", "description": "INETBNK PAY DEBIT ABSA BANK Graham Kingma ", "amount": -820, "balance": 123394.13 },
+      { "date": "2017/10/10", "description": "INETBNK PAY DEBIT ABSA BANK Ivor ", "amount": -1200, "balance": 122194.13 },
+      { "date": "2017/10/12", "description": "INETBNK PAY DEBIT ABSA BANK Ian ", "amount": -7200, "balance": 114994.13 },
+      { "date": "2017/10/13", "description": "INETBNK PAY DEBIT ABSA BANK Graham Kingma ", "amount": -820, "balance": 114174.13 },
+      { "date": "2017/10/16", "description": "DIRECT DEBIT GIVENGAIN ", "amount": -210, "balance": 113964.13 },
+      { "date": "2017/10/19", "description": "INETBNK PAY DEBIT ABSA BANK NetReturn ", "amount": -500, "balance": 113464.13 },
+      { "date": "2017/10/23", "description": "INETBNK PAY DEBIT ABSA BANK Graham Kingma", "amount": -820, "balance": 112644.13 },
+      { "date": "2017/10/23", "description": "INETBNK PAY DEBIT ABSA BANK Ian", "amount": -7200, "balance": 105444.13 },
+      { "date": "2017/10/23", "description": "POS PURCHASE 000000306139 Hokey Poke CARD NO. 8380", "amount": -110, "balance": 105334.13 },
+      { "date": "2017/10/23", "description": "TRANSACTION CHARGE", "amount": -3.85, "balance": 105330.28 },
+      { "date": "2017/10/24", "description": "POS PURCHASE 000001195040 NU GREEN POI CARD NO. 8380", "amount": -128, "balance": 105202.28 },
+      { "date": "2017/10/24", "description": "TRANSACTION CHARGE", "amount": -3.85, "balance": 105198.43 },
+      { "date": "2017/10/24", "description": "POS PURCHASE 001289756678 EL BURRO TAQ CARD NO. 8380", "amount": -175, "balance": 105023.43 },
+      { "date": "2017/10/24", "description": "TRANSACTION CHARGE", "amount": -3.85, "balance": 105019.58 },
+      { "date": "2017/10/25", "description": "ATM WITHDRAWAL  CARD NO. 8380", "amount": -2000, "balance": 103019.58 },
+      { "date": "2017/10/25", "description": "POS PURCHASE 453504100129 WOOLWORTHS CARD NO. 8380", "amount": -166.4, "balance": 102853.18 },
+      { "date": "2017/10/25", "description": "TRANSACTION CHARGE", "amount": -3.85, "balance": 102849.33 },
+      { "date": "2017/10/25", "description": "POS PURCHASE 000620092810 Clicks Gleng CARD NO. 8380", "amount": -162, "balance": 102687.33 },
+      { "date": "2017/10/25", "description": "TRANSACTION CHARGE", "amount": -3.85, "balance": 102683.48 },
+      { "date": "2017/10/31", "description": "DIRECT DEBIT TELKOMMOBI501829325010418286", "amount": -17, "balance": 102666.48 },
+      { "date": "2017/10/31", "description": "ABSA DIRECT INET/MOB FEE/FOOI", "amount": 0, "balance": 102666.48 },
+      { "date": "2017/10/31", "description": "INTERNET BANK FEE", "amount": -329.5, "balance": 102336.98 },
+      { "date": "2017/10/31", "description": "DIRECT DEBIT A COCT", "amount": -2313.26, "balance": 100023.72 },
+      { "date": "2017/11/01", "description": "DIRECT DEBIT SANTAM    J063047569", "amount": -963.44, "balance": 99060.28 },
+      { "date": "2017/11/01", "description": "DIRECT DEBIT RSAWEB    113988482 SAGEPAY", "amount": -1099, "balance": 97961.28 },
+      { "date": "2017/11/01", "description": "DIRECT DEBIT VODACOM 0277917808 I1871409", "amount": -538.21, "balance": 97423.07 },
+      { "date": "2017/11/01", "description": "DIRECT DEBIT AVERESPSEA5502AVE20RESPOOT4U", "amount": -545, "balance": 96878.07 },
+      { "date": "2017/11/02", "description": "DIRECT DEBIT PAYMENT TO ACC47876921992180", "amount": -24766.31, "balance": 72111.76 },
+      { "date": "2017/11/03", "description": "INETBNK PAY DEBIT ABSA BANK Ian", "amount": -7200, "balance": 64911.76 },
+      { "date": "2017/11/08", "description": "CREDIT INTEREST", "amount": 4.17, "balance": 64915.93 },
+      { "date": "2017/11/08", "description": "BONUS INTEREST", "amount": 1.03, "balance": 64916.96 },
+      { "date": "2017/11/08", "description": "INETBNK PAY DEBIT ABSA BANK Graham Kingma", "amount": -1640, "balance": 63276.96 },
+      { "date": "2017/11/10", "description": "INETBNK PAY DEBIT ABSA BANK Graham Kingma", "amount": -820, "balance": 62456.96 },
+      { "date": "2017/11/16", "description": "INETBNK PAY DEBIT ABSA BANK Ivor", "amount": -1600, "balance": 60856.96 },
+      { "date": "2017/11/16", "description": "DIRECT DEBIT GIVENGAIN", "amount": -210, "balance": 60646.96 },
+      { "date": "2017/11/18", "description": "INETBNK PAY DEBIT ABSA BANK Graham Kingma", "amount": -820, "balance": 59826.96 },
+      { "date": "2017/11/20", "description": "ATM WITHDRAWAL  CARD NO. 8380", "amount": -1000, "balance": 58826.96 },
+      { "date": "2017/11/20", "description": "TRANSACTION CHARGE", "amount": -23.45, "balance": 58803.51 },
+      { "date": "2017/11/22", "description": "DIRECT CREDIT A SARS    1956057036 14187", "amount": 1391.59, "balance": 60195.1 },
+      { "date": "2017/11/30", "description": "ABSA DIRECT INET/MOB FEE/FOOI", "amount": 0, "balance": 60195.1 },
+      { "date": "2017/11/30", "description": "INTERNET BANK FEE", "amount": -191.5, "balance": 60003.6 },
+      { "date": "2017/11/30", "description": "DIRECT DEBIT A COCT", "amount": -2042.24, "balance": 57961.36 },
+      { "date": "2017/12/01", "description": "DIRECT DEBIT AVERESPSEA5502AVE20RESPOJVCL", "amount": -545, "balance": 57416.36 },
+      { "date": "2017/12/01", "description": "DEBIT ORDER DEBIT ABSA RL   REWARDS F", "amount": -23, "balance": 57393.36 },
+      { "date": "2017/12/01", "description": "DIRECT DEBIT VODACOM 0279923819 I1871409", "amount": -526.29, "balance": 56867.07 },
+      { "date": "2017/12/01", "description": "DIRECT DEBIT RSAWEB    114815910 SAGEPAY", "amount": -1099, "balance": 55768.07 },
+      { "date": "2017/12/01", "description": "DIRECT DEBIT SANTAM    J063565644", "amount": -963.44, "balance": 54804.63 },
+      { "date": "2017/12/01", "description": "DIRECT DEBIT DISC PREM M6001219  -1674052", "amount": -1870, "balance": 52934.63 },
+      { "date": "2017/12/02", "description": "DIRECT DEBIT PAYMENT TO ACC47876921992180", "amount": -12772.8, "balance": 40161.83 },
+      { "date": "2017/12/04", "description": "INETBNK PAY DEBIT ABSA BANK Bush", "amount": -1030, "balance": 39131.83 },
+      { "date": "2017/12/04", "description": "DIRECT CREDIT HIREME PB VERIFY", "amount": 27.36, "balance": 39159.19 },
+    ];
+
+    this.on('mount', function () {
+      this.render_grid(hardcoded);
+    });
+
+    this.autoCategoriseIncome = (e) => {
+      for (let record of tag.grid.records) {
+        if (record.amount > 0) {
+          record.tag = 'income-row-auto';
+        }
+      }
+      tag.grid.refresh();
+    }
+
+    this.autoCategoriseExpense = (e) => {
+      for (let record of tag.grid.records) {
+        let desc = record.description.toLowerCase();
+        if (!record.tag && /direct debit/.test(desc)) {
+          record.tag = 'expense-row-auto';
+        }
+      }
+      tag.grid.refresh();
+    }
+
+    this.filter = (e) => {
+      let f = e.currentTarget.value;
+      let records = [];
+      for (let record of originalRecords) {
+        let desc = record.description.toLowerCase();
+        if (new RegExp(f).test(desc)) {
+          records.push(record);
+        }
+      }
+      tag.grid.records = records;
+      tag.grid.refresh();
+    }
+
+    this.clear = (e) => {
+      $('input[name=description]').val(undefined);
+      tag.grid.records = originalRecords;
+      tag.grid.refresh();
+    }
+
+    this.categoriseAllIncome = (e) => {
+      for (let record of tag.grid.records) {
+        record.tag = 'income-row';
+      }
+      tag.grid.refresh();
+    }
+
+    this.categoriseAllExpense = (e) => {
+      for (let record of tag.grid.records) {
+        record.tag = 'expense-row';
+      }
+      tag.grid.refresh();
+    }
+
+    this.render_grid = function (transactions) {
+      // add recid
+      let i = 0;
+      transactions.forEach(element => {
+        element.recid = ++i;
+      });
+
+      originalRecords = transactions;
+
+      // render
+      tag.grid = $('#current-account-grid').w2grid({
+        name: 'current-account-grid',
+        multiSelect: false,
+        columns: [
+          { field: 'recid', caption: 'Id', size: '5px', sortable: true },
+          { field: 'date', caption: 'Date', size: '12%', sortable: true },
+          { field: 'description', caption: 'Description', size: '56%', sortable: true },
+          { field: 'amount', caption: 'Amount', size: '12%', sortable: true },
+          { field: 'balance', caption: 'Balance', size: '20%', sortable: true },
+          //{ field: 'tag', caption: 'Tag', size: '5%', sortable: true },
+        ],
+        records: transactions,
+        onClick: function (event) {
+          let selectionBefore = tag.grid.get(tag.grid.getSelection()[0]);
+          event.onComplete = function () {
+            let selected = tag.grid.get(tag.grid.getSelection()[0]);
+            if (!selected) {
+              selected = selectionBefore;
+            }
+
+            let rowClass = $("#radio-income:checked").val() ? 'income-row' : 'expense-row';
+            if (selected.tag && selected.tag === rowClass) {
+              // toggle off
+              selected.tag = undefined;
+            } else {
+              // toggle on
+              selected.tag = rowClass;
+            }
+
+            tag.grid.refresh();
+          }
+        },
+        onRefresh: function (event) {
+          if (tag.grid) {
+            event.onComplete = function () {
+              ResetStyling(tag.grid);
+            }
+          }
+        }
+      });
+
+      // fit height
+      //var height = (tag.grid.records.length + 1) * tag.grid.recordHeight + 2;
+      //$('#current-account-grid').height(height);
+      tag.grid.refresh(); // hack - column width not calcualted correctly on first render
+      //w2ui["current-account-grid"].render();
+    }
+
+    function SetRowColor(grid, record, cssColorClass, on) {
+      var tr = $('#grid_' + grid.name + '_rec_' + w2utils.escapeId(record.recid));
+      if (on) {
+        tr.addClass(cssColorClass);
+      } else {
+        tr.removeClass(cssColorClass);
+      }
+    }
+
+    function ResetStyling(grid) {
+      for (let record of grid.records) {
+        var tr = $('#grid_' + grid.name + '_rec_' + w2utils.escapeId(record.recid));
+        tr.removeClass('w2ui-selected');
+        if (record.tag) {
+          tr.addClass(record.tag);
+        }
+      }
+    }
+  </script>
+</categorise-transactions>
+</categorise-transactions>

@@ -5,20 +5,31 @@
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-	<title>Capitec income/expenses mockup</title>
+	<title>Income/expenses mockup</title>
 
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/w2ui/1.4.3/w2ui.css" />
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp"
+    crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/w2ui/1.4.3/w2ui.css" />
+  <link rel="stylesheet" href="/css/spike-header.css">
 
-	<!-- jQuery 3.0.0+ not supported by w2ui 1.4 -->
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/w2ui/1.4.3/w2ui.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/riot@3.6/riot+compiler.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.10/lodash.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/w2ui/1.4.3/w2ui.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/7.21.1/sweetalert2.all.min.js"></script>
+
+  <script type="riot/tag" src="app.tag.html"></script>
+	<script type="riot/tag" src="upload-transactions.tag.html"></script>
+	<script type="riot/tag" src="categorise-transactions.tag.html"></script>
 </head>
 
-<body style="display: none; background-color: #1f80dd;">
+<body style="background-color: #1f80dd;">
 	<app></app>
-
-	<!-- app and vendor scripts injected by webpack -->
+	<script>
+		riot.mount('app');
+	</script>
 </body>
 
 </html>
