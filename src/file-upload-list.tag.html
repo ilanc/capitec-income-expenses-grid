@@ -1,0 +1,94 @@
+<file-upload-list>
+  <div class="row" each={ file,i in files }>
+    <div class="col-xs-12">
+      <i onclick={ clickIcon } class={getIcon(file)}></i>
+      <div title={file.name} class="filename">{file.name}</div>
+      <progress id="progress-bar-{file.num}" max=100 value=0 class={file.uploadState=="FAILED" ? "failed" : ""}></progress>
+      <div class="message">{file.message}</div>
+    </div>
+  </div>
+
+  <style>
+    .row {
+      margin-top: 10px;
+    }
+
+    i {
+      font-size: 14px;
+    }
+
+    i.fa-times {
+      color: red;
+    }
+
+    .filename {
+      width: 80px;
+    }
+
+    .message {
+      width: 200px;
+    }
+
+    .filename,
+    .message {
+      display: inline-block;
+      margin-left: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      vertical-align: bottom;
+    }
+
+    progress {
+      vertical-align: sub;
+    }
+
+    progress::-webkit-progress-value {
+      background: #4285F4;
+    }
+
+    progress.failed::-webkit-progress-value {
+      background: #f44286;
+    }
+  </style>
+
+  <script>
+    console.log('file-upload-list.tag.html')
+    var tag = this;
+    tag.files = opts.files || [];
+
+    this.clickIcon = (e) => {
+      let removedFile = e.item.file;
+      tag.files = tag.files.filter(file => file.num !== removedFile.num);
+      tag.update();
+      Events.trigger('remove-file', removedFile);
+    }
+
+    this.getIcon = (file) => {
+      switch (file.uploadState) {
+        case "NOT-STARTED":
+          return "fas fa-stop fa-fw";
+        case "PENDING":
+          return "fas fa-clock fa-fw";
+        case "SUCCESS":
+        case "WARNING":
+        case "FAILED":
+          return "fas fa-times fa-fw";
+      }
+      // not-started
+      // pending
+      // remove
+    }
+
+    this.updateProgress = (currentFile, percent) => {
+      let progressBar = document.getElementById("progress-bar-" + currentFile.num);
+      if (progressBar) {
+        progressBar.value = percent;
+      }
+    }
+
+    this.uploadComplete = (currentFile) => {
+      this.update();
+    }
+  </script>
+</file-upload-list>

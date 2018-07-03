@@ -18,6 +18,7 @@
               <button onclick={ openFileChooser } for="fileElem" class="btn income-btn btn-sm" type="button">Choose files</button>
             </div>
           </div>
+          <file-upload-list files={currentFiles}></file-upload-list>
         </div>
       </div>
     </div>
@@ -50,11 +51,12 @@
   <script>
     console.log('upload-transactions.tag.html')
     var tag = this;
+    tag.currentFiles = [];
 
     this.on('mount', function () {
       console.log('upload-transactions mount', this._riot_id);
       initDropZone();
-    })
+    });
 
     this.help = (e) => {
       swal({
@@ -73,10 +75,6 @@
 
     this.openFileChooser = (e) => {
       $("#fileElem").click();
-    }
-
-    window.handleFiles = (files) => {
-      console.log(files);
     }
 
     function initDropZone() {
@@ -100,12 +98,12 @@
       dropArea.addEventListener('drop', handleDrop, false)
 
       function preventDefaults(e) {
-        e.preventDefault()
-        e.stopPropagation()
+        e.preventDefault();
+        e.stopPropagation();
       }
 
       function highlight(e) {
-        dropArea.classList.add('dimmed')
+        dropArea.classList.add('dimmed');
       }
 
       function unhighlight(e) {
@@ -122,10 +120,105 @@
       }
 
       function handleDrop(e) {
-        var dt = e.dataTransfer
-        var files = dt.files
+        var dt = e.dataTransfer;
+        var files = dt.files;
+        handleFiles(files);
+      }
 
-        handleFiles(files)
+      window.handleFiles = async (files) => {
+        console.log(files);
+        let i = tag.currentFiles.length ? tag.currentFiles[tag.currentFiles.length - 1].num : 0;
+        let start = i;
+        let newFiles = [];
+        for (let file of files) {
+          let currentFile = { name: file.name, num: ++i, uploadState: "NOT-STARTED" };
+          tag.currentFiles.push(currentFile);
+          newFiles.push({ file, currentFile });
+        }
+        tag.tags["file-upload-list"].update(); // will render currentFile - progress bar will be updated by updateProgress
+        for (let n of newFiles) {
+          n.currentFile.uploadState = "PENDING";
+          tag.tags["file-upload-list"].update();
+          await uploadFile(n.file, n.currentFile);
+          tag.tags["file-upload-list"].uploadComplete(n.currentFile);
+        }
+        Events.trigger('changed-files', tag.currentFiles);
+      }
+
+      async function uploadFile(file, currentFile) {
+        return new Promise((resolve, reject) => {
+          let reader = new FileReader();
+          reader.onloadend = async function (event) {
+            let base64Txt = event.target.result.replace(
+              /^data:application\/pdf;base64,/,
+              ""
+            );
+            // TODO: password
+            let res = await doSpikePdfRequest(currentFile, base64Txt, undefined, updateProgress);
+            resolve(res);
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      function updateProgress(currentFile, percent) {
+        console.log(currentFile, percent);
+        tag.tags["file-upload-list"].updateProgress(currentFile, percent);
+      }
+
+      async function doSpikePdfRequest(currentFile, base64Txt, password, updateProgressCb) {
+        let request = await spikePdfRequest(currentFile, base64Txt, password, updateProgressCb);
+        if (request.result === FetchResult.ApiSuccess) {
+          let transactions = request.data.transactions;
+          let validation = request.data.validation;
+          if (validation && validation.length) {
+            console.warn(
+              "WARN",
+              request.requestId,
+              "validation errors",
+              currentFile.name,
+              validation
+            );
+          }
+          if (!transactions || transactions.length === 0) {
+            console.warn("WARNING", request.requestId, "no transactions", currentFile.name);
+            fileUploadWarning(currentFile);
+          } else {
+            console.warn("SUCCESS", request.requestId, currentFile.name);
+            fileUploadSuccess(currentFile, transactions, validation);
+          }
+          return true;
+        } else if (request.result === FetchResult.NoResponse) {
+          console.error("FAILED", request.requestId, currentFile.name, 'NoResponse', 'Server unavailable');
+          fileUploadFail(currentFile, 'NoResponse', 'Server unavailable');
+          return false;
+        } else if (request.result === FetchResult.ServerError) {
+          console.error("FAILED", request.requestId, currentFile.name, 'ServerFail', 'Error on server');
+          fileUploadFail(currentFile, 'ServerFail', 'Error on server');
+          return false;
+        } else {
+          console.error("FAILED", request.requestId, currentFile.name, request.error, request.message);
+          fileUploadFail(currentFile, request.error, request.message);
+          return false;
+        }
+      }
+
+      function fileUploadSuccess(currentFile, transactions, validation) {
+        currentFile.uploadState = "SUCCESS";
+        currentFile.transactions = transactions;
+        currentFile.validation = validation;
+      }
+
+      function fileUploadWarning(currentFile) {
+        currentFile.uploadState = "WARNING";
+        currentFile.error = "Empty";
+        currentFile.message = "No transactions detected"; F
+      }
+
+      function fileUploadFail(currentFile, error, message) {
+        currentFile.uploadState = "FAILED";
+        currentFile.error = error;
+        currentFile.message = message;
       }
     }
   </script>

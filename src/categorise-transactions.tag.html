@@ -313,7 +313,7 @@
 
     let tag = this;
 
-    let originalRecords = hardcoded = [
+    let hardcoded = [
       { "date": "2017/09/01", "description": "INETBNK PAY DEBIT ABSA BANK Graham Kingma ", "amount": -820, "balance": 89439.59 },
       { "date": "2017/09/01", "description": "ATM WITHDRAWAL  CARD NO. 8380", "amount": -1500, "balance": 87939.59 },
       { "date": "2017/09/01", "description": "TRANSACTION CHARGE  ", "amount": -30.2, "balance": 87909.39 },
@@ -408,9 +408,13 @@
       { "month": "2017/12", "income": 0, "expenses": 0, "net": 0 },
     ];
 
+    tag.originalRecords = hardcoded;
+
     this.on('mount', function () {
-      renderGrid(hardcoded);
-      renderNetIncomeGrid(hardcodedNet);
+      // renderGrid(hardcoded);
+      // renderNetIncomeGrid(hardcodedNet);
+      renderGrid([]);
+      renderNetIncomeGrid([]);
     });
 
     this.autoCategoriseIncome = (e) => {
@@ -435,7 +439,7 @@
     this.filter = (e) => {
       let f = e.currentTarget.value;
       let records = [];
-      let recordSet = originalRecords;
+      let recordSet = tag.originalRecords;
       for (let record of recordSet) {
         let desc = record.description.toLowerCase();
         if (new RegExp(f).test(desc)) {
@@ -448,12 +452,12 @@
 
     this.clear = (e) => {
       $('input[name=description]').val(undefined);
-      tag.grid.records = originalRecords;
+      tag.grid.records = tag.originalRecords;
       tag.grid.refresh();
     }
 
     this.clearTags = (e) => {
-      originalRecords.forEach(element => {
+      tag.originalRecords.forEach(element => {
         delete element.tag;
       });
       tag.grid.refresh();
@@ -490,12 +494,15 @@
       tag.grid.refresh();
     }
 
-    function renderGrid(transactions) {
-      // add recid
+    function addRecId(records) {
       let i = 0;
-      transactions.forEach(element => {
-        element.recid = ++i;
+      records.forEach(rec => {
+        rec.recid = ++i;
       });
+    }
+
+    function renderGrid(transactions) {
+      addRecId(transactions);
 
       // render
       tag.grid = $('#current-account-grid').w2grid({
@@ -542,8 +549,8 @@
         }
       });
 
-      // HACK: note .records above are cloned, hence changes to tag.grid.records won't impact originalRecords without the following
-      originalRecords = tag.grid.records;
+      // HACK: note .records above are cloned, hence changes to tag.grid.records won't impact tag.originalRecords without the following
+      tag.originalRecords = tag.grid.records;
       //tag.grid.records[0].tag = 'income-row';
       //console.log(tag.grid.records[0].tag);
       //transactions[0].tag = 'expense-row';
@@ -553,7 +560,7 @@
       //var height = (tag.grid.records.length + 1) * tag.grid.recordHeight + 2;
       //$('#current-account-grid').height(height);
       tag.grid.refresh(); // hack - column width not calcualted correctly on first render
-      //w2ui["current-account-grid"].render();
+      //tag.grid.render();
     }
 
     function renderNetIncomeGridFromTransactions() {
@@ -562,17 +569,14 @@
       let i = 0;
       for (let m in netIncome) {
         let v = netIncome[m];
-        netIncomeArray.push({ recid: ++i, "month": m, "income": v.income, "expenses": v.expenses, "net": Math.round(v.income - v.expenses) });
+        netIncomeArray.push({ recid: ++i, "month": m, "income": Math.round(v.income), "expenses": Math.round(v.expenses), "net": Math.round(v.income - v.expenses) });
       }
       tag.netIncomeGrid.records = netIncomeArray;
       tag.netIncomeGrid.refresh();
     }
 
     function renderNetIncomeGrid(netIncome) {
-      let i = 0;
-      netIncome.forEach(element => {
-        element.recid = ++i;
-      });
+      addRecId(netIncome);
 
       // render
       tag.netIncomeGrid = $('#net-income-grid').w2grid({
@@ -618,9 +622,9 @@
         };
         if (record.tag) {
           if (record.tag.startsWith('income-row')) {
-            netIncome[month].income += record.amount;
+            netIncome[month].income += record.amount || 0;
           } else if (record.tag.startsWith('expense-row')) {
-            netIncome[month].expenses += record.amount;
+            netIncome[month].expenses += record.amount || 0;
           }
         }
       }
@@ -628,5 +632,31 @@
       return netIncome;
     }
 
+    Events.on('remove-file', (removedFile) => {
+      alert('todo: remove file: ' + removedFile.name);
+    });
+
+    Events.on('changed-files', (currentFiles) => {
+      let transactions = [];
+      for (let currentFile of currentFiles) {
+        if (currentFile.transactions) {
+          sanitizeTransactions(currentFile.transactions);
+          transactions = transactions.concat(currentFile.transactions);
+        }
+      }
+
+      addRecId(transactions);
+      tag.originalRecords = transactions;
+      tag.clear();
+    });
+
+    function sanitizeTransactions(transactions) {
+      transactions.forEach(t => {
+        t.date = t.date.substr(0, 10);
+        if (Array.isArray(t.description)) {
+          t.description = t.description.join(',');
+        }
+      });
+    }
   </script>
 </categorise-transactions>
