@@ -3,13 +3,39 @@
     <div class="col-xs-12">
       <div class="panel panel-default">
         <div class="panel-heading">
-          Check and select income and expenses
+          Categorise income and expenses
+          <i onclick={ help } class="fas fa-question-circle" style="font-size: 12px;"></i>
         </div>
         <div class="panel-body">
           <div class="row">
             <div class="col-xs-12">
               <fieldset>
-                <legend>Mark as</legend>
+                <legend>Auto-categorise</legend>
+                <button onclick={ autoCategoriseIncome } class="btn income-btn btn-sm" type="button">Try auto-categorise income</button>
+                <button onclick={ autoCategoriseExpense } class="btn expense-btn btn-sm" type="button">Try auto-categorise expense</button>
+              </fieldset>
+            </div>
+          </div>
+          <div class="row" style="margin-top: 15px;">
+            <div class="col-xs-12">
+              <fieldset>
+                <legend>Filter-based categorisation</legend>
+                <form>
+                  <div class="row form-group">
+                    <label class="col-xs-1 control-label">Description</label>
+                    <input class="col-xs-6" name="description" type="text" class="form-control" oninput={ filter }>
+                    <button onclick={ clear } class="btn btn-white btn-sm" type="button" style="margin-left: 5px;">X</button>
+                    <button onclick={ categoriseAllIncome } class="btn income-btn btn-sm" type="button">Income</button>
+                    <button onclick={ categoriseAllExpense } class="btn expense-btn btn-sm" type="button">Expense</button>
+                  </div>
+                </form>
+              </fieldset>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-xs-12">
+              <fieldset>
+                <legend>Manually categorise</legend>
                 <form class="form-inline">
                   <div class="form-group">
                     <input name="mark-as-group" type="radio" id="radio-income" checked="checked">
@@ -25,32 +51,9 @@
           </div>
           <div class="row">
             <div class="col-xs-12">
-              <fieldset>
-                <legend>Categorise</legend>
-                <button onclick={ autoCategoriseIncome } class="btn income-btn btn-sm" type="button">Try auto-categorise income</button>
-                <button onclick={ autoCategoriseExpense } class="btn expense-btn btn-sm" type="button">Try auto-categorise expense</button>
-              </fieldset>
-            </div>
-          </div>
-          <div class="row" style="margin-top: 15px;">
-            <div class="col-xs-12">
-              <fieldset>
-                <legend>Filter</legend>
-                <form>
-                  <div class="row form-group">
-                    <label class="col-xs-1 control-label">Description</label>
-                    <input class="col-xs-6" name="description" type="text" class="form-control" oninput={ filter }>
-                    <button onclick={ clear } class="btn btn-white btn-sm" type="button" style="margin-left: 5px;">X</button>
-                    <button onclick={ categoriseAllIncome } class="btn income-btn btn-sm" type="button">Income</button>
-                    <button onclick={ categoriseAllExpense } class="btn expense-btn btn-sm" type="button">Expense</button>
-                  </div>
-                </form>
-              </fieldset>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-xs-12">
-              <h3>Transactions</h3>
+              <h3>Transactions
+                <i onclick={ clearTags } class="fas fa-undo" style="font-size: 12px;"></i>
+              </h3>
             </div>
           </div>
           <div class="row">
@@ -58,15 +61,15 @@
               <div id="current-account-grid" style="height: 450px;"></div>
             </div>
           </div>
-          <div style="margin-top: 15px;">
-            Notes:
-            <ul>
-              <li>Click row to toggle income (or expense) on/off</li>
-              <li>Optionally - pre-apply a set of income/expense rules - highlight in different color so staff know to check
-                them
-              </li>
-              <li>Has a filter row to search for transactions</li>
-            </ul>
+          <div class="row">
+            <div class="col-xs-12">
+              <h3>Net Income</h3>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-xs-12">
+              <div id="net-income-grid" style="height: 125px;"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -310,9 +313,7 @@
 
     let tag = this;
 
-    let originalRecords = undefined;
-
-    let hardcoded = [
+    window.originalRecords = hardcoded = [
       { "date": "2017/09/01", "description": "INETBNK PAY DEBIT ABSA BANK Graham Kingma ", "amount": -820, "balance": 89439.59 },
       { "date": "2017/09/01", "description": "ATM WITHDRAWAL  CARD NO. 8380", "amount": -1500, "balance": 87939.59 },
       { "date": "2017/09/01", "description": "TRANSACTION CHARGE  ", "amount": -30.2, "balance": 87909.39 },
@@ -400,8 +401,16 @@
       { "date": "2017/12/04", "description": "DIRECT CREDIT HIREME PB VERIFY", "amount": 27.36, "balance": 39159.19 },
     ];
 
+    let hardcodedNet = [
+      { "month": "2017/09", "income": 0, "expenses": 0, "net": 0 },
+      { "month": "2017/10", "income": 0, "expenses": 0, "net": 0 },
+      { "month": "2017/11", "income": 0, "expenses": 0, "net": 0 },
+      { "month": "2017/12", "income": 0, "expenses": 0, "net": 0 },
+    ];
+
     this.on('mount', function () {
-      this.render_grid(hardcoded);
+      renderGrid(hardcoded);
+      renderNetIncomeGrid(hardcodedNet);
     });
 
     this.autoCategoriseIncome = (e) => {
@@ -426,7 +435,8 @@
     this.filter = (e) => {
       let f = e.currentTarget.value;
       let records = [];
-      for (let record of originalRecords) {
+      let recordSet = originalRecords;
+      for (let record of recordSet) {
         let desc = record.description.toLowerCase();
         if (new RegExp(f).test(desc)) {
           records.push(record);
@@ -440,6 +450,30 @@
       $('input[name=description]').val(undefined);
       tag.grid.records = originalRecords;
       tag.grid.refresh();
+    }
+
+    this.clearTags = (e) => {
+      originalRecords.forEach(element => {
+        delete element.tag;
+      });
+      tag.grid.refresh();
+    }
+
+    this.help = (e) => {
+      swal({
+        type: 'info',
+        title: 'Help',
+        animation: false,
+        html: `<div class="left-align">
+  <ul>
+    <li>Click row to toggle income (or expense) on/off</li>
+    <li>Optionally - pre-apply a set of income/expense rules - highlight in different color so staff know to check
+      them
+    </li>
+    <li>Has a filter row to search for transactions</li>
+  </ul>
+</div>`
+      });
     }
 
     this.categoriseAllIncome = (e) => {
@@ -456,14 +490,12 @@
       tag.grid.refresh();
     }
 
-    this.render_grid = function (transactions) {
+    function renderGrid(transactions) {
       // add recid
       let i = 0;
       transactions.forEach(element => {
         element.recid = ++i;
       });
-
-      originalRecords = transactions;
 
       // render
       tag.grid = $('#current-account-grid').w2grid({
@@ -501,11 +533,21 @@
         onRefresh: function (event) {
           if (tag.grid) {
             event.onComplete = function () {
-              ResetStyling(tag.grid);
+              resetStyling(tag.grid);
+              if (tag.netIncomeGrid) {
+                renderNetIncomeGridFromTransactions();
+              }
             }
           }
         }
       });
+
+      // HACK: note .records above are cloned, hence changes to tag.grid.records won't impact originalRecords without the following
+      originalRecords = tag.grid.records;
+      //tag.grid.records[0].tag = 'income-row';
+      //console.log(tag.grid.records[0].tag);
+      //transactions[0].tag = 'expense-row';
+      //console.log(transactions[0].tag);
 
       // fit height
       //var height = (tag.grid.records.length + 1) * tag.grid.recordHeight + 2;
@@ -514,16 +556,47 @@
       //w2ui["current-account-grid"].render();
     }
 
-    function SetRowColor(grid, record, cssColorClass, on) {
-      var tr = $('#grid_' + grid.name + '_rec_' + w2utils.escapeId(record.recid));
-      if (on) {
-        tr.addClass(cssColorClass);
-      } else {
-        tr.removeClass(cssColorClass);
+    function renderNetIncomeGridFromTransactions() {
+      let netIncome = calcNetIncome(tag.grid);
+      let netIncomeArray = [];
+      let i = 0;
+      for (let m in netIncome) {
+        let v = netIncome[m];
+        netIncomeArray.push({ recid: ++i, "month": m, "income": v.income, "expenses": v.expenses, "net": Math.round(v.income - v.expenses) });
       }
+      tag.netIncomeGrid.records = netIncomeArray;
+      tag.netIncomeGrid.refresh();
     }
 
-    function ResetStyling(grid) {
+    function renderNetIncomeGrid(netIncome) {
+      let i = 0;
+      netIncome.forEach(element => {
+        element.recid = ++i;
+      });
+
+      // render
+      tag.netIncomeGrid = $('#net-income-grid').w2grid({
+        name: 'net-income-grid',
+        multiSelect: false,
+        columns: [
+          // { field: 'recid', caption: 'Id', size: '5px', sortable: true },
+          { field: 'month', caption: 'Month', size: '10%', sortable: true },
+          { field: 'income', caption: 'Income', size: '30%', sortable: true },
+          { field: 'expenses', caption: 'Expenses', size: '30%', sortable: true },
+          { field: 'net', caption: 'Net', size: '30%', sortable: true },
+          //{ field: 'tag', caption: 'Tag', size: '5%', sortable: true },
+        ],
+        records: netIncome
+      });
+
+      // fit height
+      //var height = (tag.netIncomeGrid.records.length + 1) * tag.netIncomeGrid.recordHeight + 2;
+      //$('#net-income-grid').height(height);
+      tag.netIncomeGrid.refresh(); // hack - column width not calcualted correctly on first render
+      //w2ui["net-income-grid"].render();
+    }
+
+    function resetStyling(grid) {
       for (let record of grid.records) {
         var tr = $('#grid_' + grid.name + '_rec_' + w2utils.escapeId(record.recid));
         tr.removeClass('w2ui-selected');
@@ -532,6 +605,28 @@
         }
       }
     }
+
+    function calcNetIncome(grid) {
+      let netIncome = {};
+      for (let record of grid.records) {
+        let month = record.date.toString().substr(0, 7);
+        if (!netIncome[month]) {
+          netIncome[month] = {
+            income: 0,
+            expenses: 0
+          }
+        };
+        if (record.tag) {
+          if (record.tag.startsWith('income-row')) {
+            netIncome[month].income += record.amount;
+          } else if (record.tag.startsWith('expense-row')) {
+            netIncome[month].expenses += record.amount;
+          }
+        }
+      }
+      // console.log(JSON.stringify(netIncome, null, 2));
+      return netIncome;
+    }
+
   </script>
-</categorise-transactions>
 </categorise-transactions>

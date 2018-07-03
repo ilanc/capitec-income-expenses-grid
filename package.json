@@ -5,10 +5,10 @@
   "main": "index.js",
   "scripts": {
     "check-packages": "npm outdated || true",
-    "build": "npm-run-all build-app build-static",
+    "build": "npm-run-all build-static",
     "build-app": "webpack --progress --colors --display-modules --config src/webpack.config.js",
     "watch-app": "webpack --progress --colors --display-modules --config src/webpack.config.js --watch",
-    "build-static": "rsync src/favicon.ico dist/",
+    "build-static": "rsync src/ dist/",
     "start": "live-server dist/",
     "deploy-surge": "surge dist capitec-test.cloudbank.co.za"
   },
