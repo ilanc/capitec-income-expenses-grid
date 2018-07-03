@@ -1,18 +1,132 @@
 <upload-transactions>
   <div class="row">
     <div class="col-xs-12">
-      <div class="panel panel-default">
+      <div id="dropZone" class="panel panel-default">
         <div class="panel-heading">
-          Upload statement
+          Upload statements
+          <i onclick={ help } class="fas fa-question-circle" style="font-size: 12px;"></i>
         </div>
         <div class="panel-body">
           <div class="row">
             <div class="col-xs-12">
-              <h1>TODO: drag n drop</h1>
+              Choose 1 or more recent bank statements by:
+              <ul>
+                <li>dragging and dropping files onto this panel</li>
+                <li>or by clicking the button to use file-open-dialog</li>
+              </ul>
+              <input type="file" id="fileElem" multiple accept="application/pdf" onchange="handleFiles(this.files)">
+              <button onclick={ openFileChooser } for="fileElem" class="btn income-btn btn-sm" type="button">Choose files</button>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
+
+  <style>
+    #fileElem {
+      display: none;
+    }
+
+    .dimmed {
+      position: relative;
+    }
+
+    .dimmed:before {
+      content: " ";
+      z-index: 10;
+      display: block;
+      position: absolute;
+      height: 100%;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid transparent;
+      border-radius: 4px;
+    }
+  </style>
+
+  <script>
+    console.log('upload-transactions.tag.html')
+    var tag = this;
+
+    this.on('mount', function () {
+      console.log('upload-transactions mount', this._riot_id);
+      initDropZone();
+    })
+
+    this.help = (e) => {
+      swal({
+        type: 'info',
+        title: 'Help',
+        animation: false,
+        html: `<div class="left-align">
+  Choose 1 or more recent bank statements by:
+  <ul>
+    <li>dragging and dropping files onto this panel</li>
+    <li>or by clicking the button to use file-open-dialog</li>
+  </ul>
+</div>`
+      });
+    }
+
+    this.openFileChooser = (e) => {
+      $("#fileElem").click();
+    }
+
+    window.handleFiles = (files) => {
+      console.log(files);
+    }
+
+    function initDropZone() {
+      var dropArea = document.getElementById('dropZone');
+
+      // Prevent default drag behaviors
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, preventDefaults, false)
+        document.body.addEventListener(eventName, preventDefaults, false)
+      });
+
+      // Highlight drop area when item is dragged over it
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.addEventListener(eventName, highlight, false)
+      });
+
+      dropArea.addEventListener('dragleave', unhighlightCheck, false)
+      dropArea.addEventListener('drop', unhighlight, false)
+
+      // Handle dropped files
+      dropArea.addEventListener('drop', handleDrop, false)
+
+      function preventDefaults(e) {
+        e.preventDefault()
+        e.stopPropagation()
+      }
+
+      function highlight(e) {
+        dropArea.classList.add('dimmed')
+      }
+
+      function unhighlight(e) {
+        dropArea.classList.remove('dimmed');
+      }
+
+      function unhighlightCheck(e) {
+        var x = event.clientX, y = event.clientY;
+        var elementMouseIsOver = document.elementFromPoint(x, y);
+        console.log(elementMouseIsOver.id);
+        if (elementMouseIsOver.id !== "dropZone") {
+          dropArea.classList.remove('dimmed');
+        }
+      }
+
+      function handleDrop(e) {
+        var dt = e.dataTransfer
+        var files = dt.files
+
+        handleFiles(files)
+      }
+    }
+  </script>
 </upload-transactions>

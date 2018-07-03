@@ -305,15 +305,15 @@
   </style>
 
   <script>
-    console.log('app.tag.html')
+    console.log('categorise-transactions.tag.html')
 
     this.on('mount', function () {
-      console.log('app mount', this._riot_id)
+      console.log('categorise-transactions mount', this._riot_id)
     })
 
     let tag = this;
 
-    window.originalRecords = hardcoded = [
+    let originalRecords = hardcoded = [
       { "date": "2017/09/01", "description": "INETBNK PAY DEBIT ABSA BANK Graham Kingma ", "amount": -820, "balance": 89439.59 },
       { "date": "2017/09/01", "description": "ATM WITHDRAWAL  CARD NO. 8380", "amount": -1500, "balance": 87939.59 },
       { "date": "2017/09/01", "description": "TRANSACTION CHARGE  ", "amount": -30.2, "balance": 87909.39 },
