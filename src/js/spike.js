@@ -6,7 +6,7 @@ let settings = {
   userKey: "ccf55bd0-898f-11e7-9851-a5eee2319d1d"
 };
 
-const FetchResult = {
+export const FetchResult = {
   NoResponse: -2, // didn't get response
   ServerError: -1, // got response from server (internal error)
   ApiSuccess: 0, // got Api response = success
@@ -14,7 +14,12 @@ const FetchResult = {
   ApiFail: 2 // got Api response = fail
 };
 
-async function spikePdfRequest(currentFile, base64Txt, password, updateProgress) {
+export async function spikePdfRequest(
+  currentFile,
+  base64Txt,
+  password,
+  updateProgress
+) {
   let url = `${settings.apiHost}/pdf`;
 
   let inputs = {
@@ -33,19 +38,21 @@ async function spikePdfRequest(currentFile, base64Txt, password, updateProgress)
     // Api response received - could be success or fail
     //  success = { result, requestId, data }
     //  fail = { result, requestId, errorCode, message, messages }
-    if (json.result === "success") {
-      var extracted = json.data[0];
+    if (json.result === "success" || json.result === "warning") {
       return {
         result: FetchResult.ApiSuccess,
         requestId: json.requestId,
-        data: extracted
+        data: json.data[0]
       };
     } else {
       return {
         result: FetchResult.ApiFail,
         requestId: json.requestId,
-        error: json.errorCode,
-        message: json.message || json.messages
+        error: {
+          code: json.errorCode,
+          message: json.message,
+          messages: json.messages
+        }
       };
     }
   } catch (ex) {
@@ -54,9 +61,14 @@ async function spikePdfRequest(currentFile, base64Txt, password, updateProgress)
   }
 }
 
-function nop() {}
+export function nop() {}
 
-async function postJsonXhr(url, data, currentFile, updateProgress = nop) {
+export async function postJsonXhr(
+  url,
+  data,
+  currentFile,
+  updateProgress = nop
+) {
   return new Promise((resolve, reject) => {
     var xhr = new XMLHttpRequest();
     xhr.open("POST", url, true);
@@ -84,7 +96,7 @@ async function postJsonXhr(url, data, currentFile, updateProgress = nop) {
       }
     };
     xhr.onerror = function(e) {
-      console.error('xhr onerror', e);
+      console.error("xhr onerror", e);
       return reject(xhr);
     };
 

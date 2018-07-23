@@ -15,7 +15,8 @@
                 <li>or by clicking the button to use file-open-dialog</li>
               </ul>
               <input type="file" id="fileElem" multiple accept="application/pdf" onchange="handleFiles(this.files)">
-              <button onclick={ openFileChooser } for="fileElem" class="btn income-btn btn-sm" type="button">Choose files</button>
+              <button onclick={ openFileChooser } for="fileElem" class="btn btn-sm" type="button">Choose files</button>
+              <button onclick={ download } class="btn btn-sm" type="button">Download csv</button>
             </div>
           </div>
           <file-upload-list files={currentFiles}></file-upload-list>
@@ -49,7 +50,14 @@
   </style>
 
   <script>
-    console.log('upload-transactions.tag.html')
+    console.log('upload-transactions.tag.html');
+    // deps
+    import './file-upload-list.tag.html'
+    import { FetchResult, spikePdfRequest } from "./js/spike";
+    import { Events } from "./js/riot-helpers";
+    import { SaveTextAs } from "./js/fileSaver";
+    //import { pdfjsLib } from "x"; // global - see index.html
+
     var tag = this;
     tag.currentFiles = [];
 
@@ -74,7 +82,100 @@
     }
 
     this.openFileChooser = (e) => {
-      $("#fileElem").click();
+      let el = document.querySelector('#fileElem');
+      if (el.onclick) {
+        el.onclick();
+      } else if (el.click) {
+        el.click();
+      }
+    }
+
+    this.download = (e) => {
+      let transactions = getAllCurrentTransactionsForCsv();
+      if (transactions.length === 0) {
+        swal({
+          type: 'error',
+          title: 'No files',
+          animation: false,
+          html: `Choose files first then try Download csv`
+        });
+        return;
+      }
+      downloadCsv('spike.csv', objectArrayToCsvRows(transactions, ["id", "date", "description", "amount", "balance", "file"]));
+    }
+
+    function getAllCurrentTransactions() {
+      let transactions = [];
+      for (let currentFile of tag.currentFiles) {
+        if (currentFile.transactions) {
+          transactions = transactions.concat(currentFile.transactions);
+        }
+      }
+      return transactions;
+    }
+
+    function getAllCurrentTransactionsForCsv() {
+      let transactions = [];
+      let id = 0;
+      for (let currentFile of tag.currentFiles) {
+        if (currentFile.transactions) {
+          for (let t of currentFile.transactions) {
+            transactions.push({
+              id: ++id,
+              date: t.date.substr(0, 10),
+              description: t.description,
+              amount: t.amount,
+              balance: t.balance,
+              file: currentFile.name
+            });
+          }
+        }
+      }
+
+      return transactions;
+    }
+
+    function downloadCsv(name, csvRows) {
+      SaveTextAs(csvRows.join("\r\n"), name);
+    }
+
+    function objectArrayToCsvRows(rows, cols = undefined, truncateDateTime = false) {
+      // col headers
+      if (!cols) {
+        // NOTE: union cols from all rows. Using first row cols will exclude missing cols e.g. row[0].amount = undefined
+        cols = [];
+        rows.forEach(function (t) {
+          let currentCols = Object.keys(t);
+          cols = [...new Set(cols.concat(currentCols))]; // merge unique
+        });
+      }
+      let header = `"${cols.join('","')}"`;
+      let csvRows = [];
+      csvRows.push(header);
+
+      // rows
+      rows.forEach(function (t) {
+        let comma = '';
+        let csvRow = '';
+        cols.forEach(function (c) {
+          let x = t[c];
+          if (x === undefined) {
+            x = "";
+          } else if (Array.isArray(x)) {
+            x = x.join("\n");
+          } else if (x instanceof Date) {
+            x = x.toJSON();
+            if (truncateDateTime) {
+              // remove time: '2018-07-10T23:16:36.715Z' => '2018-07-10'
+              x = x.substr(0, 10);
+            }
+          }
+          csvRow += `${comma}"${x}"`;
+          comma = ',';
+        });
+        csvRows.push(csvRow);
+      });
+      return csvRows;
     }
 
     function initDropZone() {
@@ -145,20 +246,105 @@
         Events.trigger('changed-files', tag.currentFiles);
       }
 
+      Events.on('remove-file', (removedFile) => {
+        // HACK: Shared state: <file-upload-list>.tag.files <=> <upload-transactions>.tag.currentFiles
+        let i = tag.currentFiles.indexOf(removedFile);
+        tag.currentFiles.splice(i, 1); // mutate existing shared array don't create new array
+        tag.tags["file-upload-list"].update();
+      });
+
       async function uploadFile(file, currentFile) {
         return new Promise((resolve, reject) => {
+          let password = undefined;
           let reader = new FileReader();
           reader.onloadend = async function (event) {
             let base64Txt = event.target.result.replace(
               /^data:application\/pdf;base64,/,
               ""
             );
-            // TODO: password
-            let res = await doSpikePdfRequest(currentFile, base64Txt, undefined, updateProgress);
+            let check;
+            while (check = await checkPasswordProtected(base64Txt, password)) {
+              switch (check) {
+                case PasswordCheck.Ok:
+                  break;
+                case PasswordCheck.PasswordRequired:
+                  password = await getPassword(currentFile);
+                  currentFile.password = password;
+                  break;
+                case PasswordCheck.PasswordIncorrect:
+                  // TODO: allow cancel out of loop / remove file
+                  await swal({
+                    type: 'error',
+                    title: 'Incorrect password, try again',
+                    animation: false,
+                    text: "We could not unlock the file using the password which your supplied, please try again"
+                  });
+                  password = await getPassword(currentFile);
+                  currentFile.password = password;
+                  break;
+                case PasswordCheck.CheckFailed:
+                  return reject("Unable to read Pdf file");
+              }
+            }
+
+            let res = await doSpikePdfRequest(currentFile, base64Txt, password, updateProgress);
             resolve(res);
           };
           reader.readAsDataURL(file);
         });
+      }
+
+      const Pdf2JsExceptions = {
+        PasswordRequired: {
+          name: 'PasswordException',
+          message: 'No password given'
+        },
+        PasswordIncorrect: {
+          name: 'PasswordException',
+          message: 'Incorrect Password'
+        },
+      };
+
+      const PasswordCheck = {
+        Ok: 0,
+        PasswordRequired: 1,
+        PasswordIncorrect: 2,
+        CheckFailed: 3
+      };
+
+      async function checkPasswordProtected(base64Txt, pass) {
+        let bufferArray = _base64ToArrayBuffer(base64Txt)
+        let result;
+        try {
+          let pdf = await pdfjsLib.getDocument({ data: bufferArray, password: pass });
+          return PasswordCheck.Ok;
+        } catch (ex) {
+          if (ex.name === Pdf2JsExceptions.PasswordRequired.name && ex.message === Pdf2JsExceptions.PasswordRequired.message)
+            return PasswordCheck.PasswordRequired;
+          if (ex.name === Pdf2JsExceptions.PasswordIncorrect.name && ex.message === Pdf2JsExceptions.PasswordIncorrect.message)
+            return PasswordCheck.PasswordIncorrect;
+          console.log('Pdf.JS exception', ex);
+          return PasswordCheck.CheckFailed;
+        }
+      }
+
+      async function getPassword(currentFile) {
+        const { value: password } = await swal({
+          title: `Enter password for ${currentFile.name}`,
+          input: "password",
+          inputPlaceholder: "Password",
+        });
+        return password
+      }
+
+      function _base64ToArrayBuffer(base64) {
+        var binary_string = window.atob(base64);
+        var len = binary_string.length;
+        var bytes = new Uint8Array(len);
+        for (var i = 0; i < len; i++) {
+          bytes[i] = binary_string.charCodeAt(i);
+        }
+        return bytes.buffer
       }
 
       function updateProgress(currentFile, percent) {
@@ -170,14 +356,14 @@
         let request = await spikePdfRequest(currentFile, base64Txt, password, updateProgressCb);
         if (request.result === FetchResult.ApiSuccess) {
           let transactions = request.data.transactions;
-          let validation = request.data.validation;
-          if (validation && validation.length) {
+          let breaks = request.data.breaks;
+          if (breaks && breaks.length) {
             console.warn(
               "WARN",
               request.requestId,
               "validation errors",
               currentFile.name,
-              validation
+              breaks
             );
           }
           if (!transactions || transactions.length === 0) {
@@ -185,7 +371,7 @@
             fileUploadWarning(currentFile);
           } else {
             console.warn("SUCCESS", request.requestId, currentFile.name);
-            fileUploadSuccess(currentFile, transactions, validation);
+            fileUploadSuccess(currentFile, transactions, breaks);
           }
           return true;
         } else if (request.result === FetchResult.NoResponse) {
@@ -197,22 +383,22 @@
           fileUploadFail(currentFile, 'ServerFail', 'Error on server');
           return false;
         } else {
-          console.error("FAILED", request.requestId, currentFile.name, request.error, request.message);
-          fileUploadFail(currentFile, request.error, request.message);
+          console.error("FAILED", request.requestId, currentFile.name, request.error.code, request.error.message);
+          fileUploadFail(currentFile, request.error.code, request.error.message);
           return false;
         }
       }
 
-      function fileUploadSuccess(currentFile, transactions, validation) {
+      function fileUploadSuccess(currentFile, transactions, breaks, password) {
         currentFile.uploadState = "SUCCESS";
         currentFile.transactions = transactions;
-        currentFile.validation = validation;
+        currentFile.breaks = breaks;
       }
 
       function fileUploadWarning(currentFile) {
         currentFile.uploadState = "WARNING";
         currentFile.error = "Empty";
-        currentFile.message = "No transactions detected"; F
+        currentFile.message = "No transactions detected";
       }
 
       function fileUploadFail(currentFile, error, message) {

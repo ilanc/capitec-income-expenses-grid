@@ -305,7 +305,9 @@
   </style>
 
   <script>
-    console.log('categorise-transactions.tag.html')
+    console.log('categorise-transactions.tag.html');
+    // deps
+    import { Events } from "./js/riot-helpers";
 
     this.on('mount', function () {
       console.log('categorise-transactions mount', this._riot_id)

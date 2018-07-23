@@ -1,74 +1,8 @@
-@font-face {
-    font-family: 'open_sanslight';
-    src: url('../fonts/opensans-light-webfont.eot');
-    src: url('../fonts/opensans-light-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../fonts/opensans-light-webfont.woff2') format('woff2'),
-         url('../fonts/opensans-light-webfont.woff') format('woff'),
-         url('../fonts/opensans-light-webfont.ttf') format('truetype'),
-         url('../fonts/opensans-light-webfont.svg#open_sanslight') format('svg');
-    font-weight: normal;
-    font-style: normal;
-}
-@font-face {
-    font-family: 'open_sansregular';
-    src: url('../fonts/opensans-regular-webfont.eot');
-    src: url('../fonts/opensans-regular-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../fonts/opensans-regular-webfont.woff2') format('woff2'),
-         url('../fonts/opensans-regular-webfont.woff') format('woff'),
-         url('../fonts/opensans-regular-webfont.ttf') format('truetype'),
-         url('../fonts/opensans-regular-webfont.svg#open_sansregular') format('svg');
-    font-weight: normal;
-    font-style: normal;
-}
-@font-face {
-    font-family: 'ubuntulight';
-    src: url('../fonts/ubuntu-l-webfont.eot');
-    src: url('../fonts/ubuntu-l-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../fonts/ubuntu-l-webfont.woff2') format('woff2'),
-         url('../fonts/ubuntu-l-webfont.woff') format('woff'),
-         url('../fonts/ubuntu-l-webfont.ttf') format('truetype'),
-         url('../fonts/ubuntu-l-webfont.svg#ubuntulight') format('svg');
-    font-weight: normal;
-    font-style: normal;
-}
-@font-face {
-    font-family: 'ubuntumedium_italic';
-    src: url('../fonts/ubuntu-mi-webfont.eot');
-    src: url('../fonts/ubuntu-mi-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../fonts/ubuntu-mi-webfont.woff2') format('woff2'),
-         url('../fonts/ubuntu-mi-webfont.woff') format('woff'),
-         url('../fonts/ubuntu-mi-webfont.ttf') format('truetype'),
-         url('../fonts/ubuntu-mi-webfont.svg#ubuntumedium_italic') format('svg');
-    font-weight: normal;
-    font-style: normal;
-}
-@font-face {
-    font-family: 'ubunturegular';
-    src: url('../fonts/ubuntu-r-webfont.eot');
-    src: url('../fonts/ubuntu-r-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../fonts/ubuntu-r-webfont.woff2') format('woff2'),
-         url('../fonts/ubuntu-r-webfont.woff') format('woff'),
-         url('../fonts/ubuntu-r-webfont.ttf') format('truetype'),
-         url('../fonts/ubuntu-r-webfont.svg#ubunturegular') format('svg');
-    font-weight: normal;
-    font-style: normal;
-}
-@font-face {
-    font-family: 'ubuntuitalic';
-    src: url('../fonts/ubuntu-ri-webfont.eot');
-    src: url('../fonts/ubuntu-ri-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../fonts/ubuntu-ri-webfont.woff2') format('woff2'),
-         url('../fonts/ubuntu-ri-webfont.woff') format('woff'),
-         url('../fonts/ubuntu-ri-webfont.ttf') format('truetype'),
-         url('../fonts/ubuntu-ri-webfont.svg#ubuntuitalic') format('svg');
-    font-weight: normal;
-    font-style: normal;
-}
-
 /* CSS */
 *{appearance:none;-webkit-appearance:none;-moz-appearance:none;text-shadow:none!important;outline:none!important}
 html{height:100%}
-body{background-color: #dadada; font-family:'ubuntulight';-webkit-overflow-scrolling:touch;-webkit-font-smoothing:antialiase;min-height:100%;position:relative;padding-bottom:50px;padding-right:0px!important;margin-right:0px!important}
+body{background-color: #dadada; font-family:'Open Sans', sans-serif;-webkit-overflow-scrolling:touch;-webkit-font-smoothing:antialiase;min-height:100%;position:relative;padding-bottom:50px;padding-right:0px!important;margin-right:0px!important}
+body.modal-open{overflow:auto}
 
 /* Nav */
 nav {padding: 30px 0 20px 0;border-bottom: 1px solid #e8e8e8;margin-bottom: 30px;}
@@ -91,15 +25,98 @@ nav ul > li > a:hover {
 header{background:#1F80DD;height:60px;padding-top:10px}
 header .tag-line {
   color: white;
+  font-family:'Ubuntu', sans-serif;
   font-style: italic;
   font-size: 20px;
   margin-left: 10px;
   vertical-align: -10px;
 }
 /* Footer */
-footer{position:absolute;height:50px;left:0;right:0;bottom:0;text-align:center;font-family:'ubunturegular';font-size:12px}
+footer{position:absolute;height:50px;left:0;right:0;bottom:0;text-align:center;font-size:12px}
 
 /* Util */
 .block{text-align:center;white-space:nowrap;height:100%}
 .block:before{content:'';display:inline-block;height:100%;vertical-align:middle;margin-right:-.25em}
 .centered{display:inline-block;vertical-align:middle}
+
+/*----------------------------------------------------------
+|	General
++----------------------------------------------------------*/
+
+.panel-heading .fas {
+  float: right;
+}
+
+.swal2-popup #swal2-content .left-align {
+  text-align: left !important;
+  font-size: 10px !important;
+}
+
+/*----------------------------------------------------------
+|	loginwidget
++----------------------------------------------------------*/
+
+#loginwidget {
+  float: right;
+}
+
+#loginwidget ul {
+  padding: 0;
+  /*margin:3.3em 0 0 6em;*/
+}
+
+#loginwidget li {
+  font-size: 10px;
+  float: left;
+  list-style: none;
+  margin-left: 1em;
+  position: relative;
+  border-radius: 2px;
+}
+
+#loginwidget a,
+#loginwidget a:visited {
+  color: #fff;
+  padding: 5px 10px;
+  text-decoration: none;
+  font-size: 1.2em;
+  display: block;
+}
+
+#loginwidget li:hover,
+#loginwidget li:active,
+#loginwidget li.current {
+  color: #fff;
+  background: #4c9ce6;
+}
+
+#loginwidget a:hover {
+  color: #fff;
+}
+
+#loginwidget li:hover .submenu {
+  display: block;
+}
+
+#loginwidget .submenu {
+  position: absolute;
+  padding: 0 0 5px;
+  top: 96%;
+  right: 0;
+  margin: 0;
+  background: #4c9ce6;
+  display: none;
+  min-width: 120px;
+  border-radius: 0 0 2px 2px;
+  z-index: 9999;
+}
+
+#loginwidget .submenu a {
+  color: #fff;
+  display: block;
+}
+
+#loginwidget .submenu li {
+  float: none;
+  margin-left: 0;
+}

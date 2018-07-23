@@ -1,10 +1,20 @@
 <file-upload-list>
-  <div class="row" each={ file,i in files }>
-    <div class="col-xs-12">
-      <i onclick={ clickIcon } class={getIcon(file)}></i>
-      <div title={file.name} class="filename">{file.name}</div>
-      <progress id="progress-bar-{file.num}" max=100 value=0 class={file.uploadState=="FAILED" ? "failed" : ""}></progress>
-      <div class="message">{file.message}</div>
+  <div each={ file,i in files }>
+    <div class="row">
+      <div class="col-xs-1">
+        <i onclick={ clickIcon } class={getIcon(file)}></i>
+      </div>
+      <div class="col-xs-5">
+        <progress id="progress-bar-{file.num}" max=100 value=0 class={file.uploadState=="FAILED" ? "failed" : ""}></progress>
+      </div>
+      <div class="col-xs-6">
+        <div title={file.name} class="filename">{file.name}</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xs-12">
+        <div class="message">{file.message}</div>
+      </div>
     </div>
   </div>
 
@@ -22,16 +32,16 @@
     }
 
     .filename {
-      width: 80px;
+      /* width: 80px; */
     }
 
     .message {
-      width: 200px;
+      /* width: 200px; */
     }
 
     .filename,
     .message {
-      display: inline-block;
+      /* display: inline-block; */
       margin-left: 5px;
       white-space: nowrap;
       overflow: hidden;
@@ -41,6 +51,8 @@
 
     progress {
       vertical-align: sub;
+      width: 100%;
+      /* max-width: 300px; */
     }
 
     progress::-webkit-progress-value {
@@ -53,14 +65,19 @@
   </style>
 
   <script>
-    console.log('file-upload-list.tag.html')
+    console.log('file-upload-list.tag.html');
+
+    // deps
+    import { Events } from "./js/riot-helpers.js";
+
     var tag = this;
     tag.files = opts.files || [];
 
     this.clickIcon = (e) => {
       let removedFile = e.item.file;
-      tag.files = tag.files.filter(file => file.num !== removedFile.num);
-      tag.update();
+      // HACK: Shared state: <file-upload-list>.tag.files <=> <upload-transactions>.tag.currentFiles
+      //tag.files = tag.files.filter(file => file.num !== removedFile.num); //
+      //tag.update();
       Events.trigger('remove-file', removedFile);
     }
 

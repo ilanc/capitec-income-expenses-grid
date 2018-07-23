@@ -1,8 +1,10 @@
+import riot from 'riot';
+
 const _GlobalEvents = {
   observable: riot.observable()
 };
 
-const Events = {
+export const Events = {
   trigger(eventName, arg) {
     _GlobalEvents.observable.trigger(eventName, arg);
   },
@@ -12,7 +14,7 @@ const Events = {
   },
 };
 
-function ShowException(ex) {
+export function ShowException(ex) {
   let json = JSON.stringify(ex, Object.getOwnPropertyNames(ex), 2).replace(/\\n/g, '<br>');
   swal({
     type: 'error',
@@ -29,7 +31,7 @@ function ShowException(ex) {
   */
 }
 
-function removeChildren(el) {
+export function removeChildren(el) {
   // unmount any riot tags
   for (let child of el.children) {
     if (child._tag) {

@@ -1,0 +1,7 @@
+css/
+css/*
+img/
+img/*
+js/
+js/*
+index.html
