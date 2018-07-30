@@ -571,7 +571,7 @@
       let i = 0;
       for (let m in netIncome) {
         let v = netIncome[m];
-        netIncomeArray.push({ recid: ++i, "month": m, "income": Math.round(v.income), "expenses": Math.round(v.expenses), "net": Math.round(v.income - v.expenses) });
+        netIncomeArray.push({ recid: ++i, "month": m, "income": Math.round(v.income), "expenses": Math.round(v.expenses), "net": Math.round(v.income + v.expenses) });
       }
       tag.netIncomeGrid.records = netIncomeArray;
       tag.netIncomeGrid.refresh();
