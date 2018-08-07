@@ -10,7 +10,7 @@
     "build": "npm-run-all build-public build-ux-root",
     "start-src": "live-server src/",
     "start-dist": "live-server dist/",
-    "live-deploy": "surge dist capitec-test.cloudbank.co.za",
+    "live-deploy": "surge dist affordability.demo.spikedata.co.za",
     "live": "npm-run-all build live-deploy"
   },
   "author": "Ilan Copelyn",
