@@ -1,4 +1,9 @@
-node_modules/
-.DS_Store
+node_modules
+*.7z
 *.log
-dist/
+.venv
+__pycache__
+.ipynb_checkpoints/
+Pipfile.lock
+package-lock.json
+dist
