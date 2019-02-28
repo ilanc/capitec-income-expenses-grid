@@ -1,70 +1,78 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Income/expenses mockup</title>
 
-<head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Income/expenses mockup</title>
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/w2ui/1.4.3/w2ui.css" />
+    <link
+      rel="stylesheet"
+      href="https://use.fontawesome.com/releases/v5.0.13/css/all.css"
+      integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/w2ui/1.4.3/w2ui.css" />
+    <link rel="stylesheet" href="/css/spike-header.css" />
 
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/w2ui/1.4.3/w2ui.css" />
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp"
-    crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/w2ui/1.4.3/w2ui.css" />
-  <link rel="stylesheet" href="/css/spike-header.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/riot@3.6/riot+compiler.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.10/lodash.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/w2ui/1.4.3/w2ui.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/7.21.1/sweetalert2.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.0.550/pdf.js"></script>
+    <style>
+      /* General */
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/riot@3.6/riot+compiler.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.10/lodash.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/w2ui/1.4.3/w2ui.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/7.21.1/sweetalert2.all.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.0.550/pdf.js"></script>
-  <style>
-    /* General */
+      .panel-heading .fas {
+        float: right;
+      }
 
-    .panel-heading .fas {
-      float: right;
-    }
+      .swal2-popup #swal2-content .left-align {
+        text-align: left !important;
+        font-size: 10px !important;
+      }
+    </style>
 
-    .swal2-popup #swal2-content .left-align {
-      text-align: left !important;
-      font-size: 10px !important;
-    }
-  </style>
+    <script src="js/spike.js"></script>
+    <script src="js/riot-helpers.js"></script>
+    <script type="riot/tag" src="app.tag.html"></script>
+    <script type="riot/tag" src="file-upload-list.tag.html"></script>
+    <script type="riot/tag" src="upload-transactions.tag.html"></script>
+    <script type="riot/tag" src="categorise-transactions.tag.html"></script>
+  </head>
 
-  <script src="spike.js"></script>
-  <script src="riot-helpers.js"></script>
-  <script type="riot/tag" src="app.tag.html"></script>
-  <script type="riot/tag" src="file-upload-list.tag.html"></script>
-  <script type="riot/tag" src="upload-transactions.tag.html"></script>
-  <script type="riot/tag" src="categorise-transactions.tag.html"></script>
-</head>
-
-<body>
-  <header style="margin-bottom: 10px;">
-    <div class="container">
-      <div class="row">
-        <div class="col-xs-12">
-          <img src="/img/logo.svg" alt="Spike" height="46" />
-          <span class="tag-line">Income &amp; Expenses categorisation demo</span>
+  <body>
+    <header style="margin-bottom: 10px;">
+      <div class="container">
+        <div class="row">
+          <div class="col-xs-12">
+            <img src="/img/logo.svg" alt="Spike" height="46" />
+            <span class="tag-line">Income &amp; Expenses categorisation demo</span>
+          </div>
         </div>
       </div>
-    </div>
-  </header>
-  <section>
-    <app></app>
-  </section>
-  <footer style="bottom: auto;">
-    <div class="block">
-      <div class="centered">
-        <a href="https://spikedata.co.za">spikedata.co.za</a>
+    </header>
+    <section>
+      <app></app>
+    </section>
+    <footer style="bottom: auto;">
+      <div class="block">
+        <div class="centered">
+          <a href="https://spikedata.co.za">spikedata.co.za</a>
+        </div>
       </div>
-    </div>
-  </footer>
-  <script>
-    riot.mount('app');
-  </script>
-</body>
-
+    </footer>
+    <script>
+      riot.mount("app");
+    </script>
+  </body>
 </html>

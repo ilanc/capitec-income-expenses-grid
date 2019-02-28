@@ -1,4 +1,4 @@
-let prodApiHost = "https://api-v5.spikedata.co.za";
+let prodApiHost = "https://api-v6.spikedata.co.za";
 let debugApiHost = "http://localhost:3000";
 let settings = {
   apiHost: prodApiHost,
@@ -14,20 +14,24 @@ export const FetchResult = {
   ApiFail: 2 // got Api response = fail
 };
 
-export async function spikePdfRequest(
-  currentFile,
-  base64Txt,
-  password,
-  updateProgress
-) {
+const TYPES = {
+  NOTSET: 0,
+  INPUTS: 1,
+  // FN response
+  SUCCESS: 2,
+  INTERIM: 3,
+  // various errors - from FN or from plumbing
+  ERROR: 4
+};
+
+export async function spikePdfRequest(currentFile, base64Txt, password, updateProgress) {
   let url = `${settings.apiHost}/pdf`;
 
   let inputs = {
-    pdf: {
-      pdfFileName: currentFile.name,
-      pdfBase64: base64Txt,
-      pdfPass: password
-    },
+    type: "BANK",
+    file: currentFile.name,
+    buffer: base64Txt,
+    pass: password,
     "x-api-key": settings.apiKey,
     "x-user-key": settings.userKey
   };
@@ -38,20 +42,19 @@ export async function spikePdfRequest(
     // Api response received - could be success or fail
     //  success = { result, requestId, data }
     //  fail = { result, requestId, errorCode, message, messages }
-    if (json.result === "success" || json.result === "warning") {
+    if (json.type === TYPES.SUCCESS) {
       return {
         result: FetchResult.ApiSuccess,
         requestId: json.requestId,
-        data: json.data[0]
+        data: json.data
       };
     } else {
       return {
         result: FetchResult.ApiFail,
         requestId: json.requestId,
         error: {
-          code: json.errorCode,
-          message: json.message,
-          messages: json.messages
+          code: json.code,
+          message: "failed " + json.code
         }
       };
     }
@@ -63,12 +66,7 @@ export async function spikePdfRequest(
 
 export function nop() {}
 
-export async function postJsonXhr(
-  url,
-  data,
-  currentFile,
-  updateProgress = nop
-) {
+export async function postJsonXhr(url, data, currentFile, updateProgress = nop) {
   return new Promise((resolve, reject) => {
     var xhr = new XMLHttpRequest();
     xhr.open("POST", url, true);

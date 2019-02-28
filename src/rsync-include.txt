@@ -5,3 +5,4 @@ img/*
 js/
 js/*
 index.html
+favicon.ico
